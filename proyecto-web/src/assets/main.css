@@ -1,33 +1,35 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --ecora-cream:  #F5F3EE;
+  --ecora-stone:  #716C59;
+  --ecora-sand:   #AEA897;
+  --ecora-black:  #0B0B09;
+  --ecora-warm:   #6F5F48;
+  --ecora-gray:   #A5A8AF;
+}
+
+body {
+  background: var(--ecora-cream);
+  color: var(--ecora-black);
+  font-family: 'Jost', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+  min-height: 100vh;
 }
 
-a,
-.green {
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
   text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
+  color: inherit;
 }
