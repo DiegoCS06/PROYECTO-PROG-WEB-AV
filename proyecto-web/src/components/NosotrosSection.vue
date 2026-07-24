@@ -3,11 +3,11 @@
     <div class="nosotros__inner">
 
       <!-- COLUMNA IMAGEN -->
-      <div class="nosotros__imagen-wrap">
+      <div class="nosotros__image-wrap">
         <img
           src="/nosotros.jpg"
           alt="Telas recicladas en taller de Ecora, fotografía tomada de @Greenlosophy en Pinterest"
-          class="nosotros__imagen"
+          class="nosotros__image"
         >
         <div class="nosotros__badge">
           <span class="nosotros__badge-year">DESDE 2023</span>
@@ -16,16 +16,16 @@
       </div>
 
       <!-- COLUMNA TEXTO -->
-      <div class="nosotros__contenido">
+      <div class="nosotros__content">
 
         <span class="nosotros__eyebrow">Quiénes somos</span>
 
-        <h2 class="nosotros__titulo">
+        <h2 class="nosotros__title">
           Una marca nacida<br>
           del <em>compromiso.</em>
         </h2>
 
-        <p class="nosotros__descripcion">
+        <p class="nosotros__description">
           Ecora nació de la convicción de que la industria de la moda puede
           —y debe— cambiar. Creamos prendas únicas a partir de tela reciclada,
           dándole una segunda vida a materiales que de otro modo terminarían
@@ -35,15 +35,15 @@
         <!-- MISIÓN Y VISIÓN -->
         <div class="nosotros__mv">
           <div class="nosotros__mv-item">
-            <h3 class="nosotros__mv-titulo">Misión</h3>
-            <p class="nosotros__mv-texto">
+            <h3 class="nosotros__mv-title">Misión</h3>
+            <p class="nosotros__mv-text">
               Brindar una alternativa de moda sostenible con prendas ecológicas,
               promoviendo un consumo consciente sin sacrificar estilo ni calidad.
             </p>
           </div>
           <div class="nosotros__mv-item">
-            <h3 class="nosotros__mv-titulo">Visión</h3>
-            <p class="nosotros__mv-texto">
+            <h3 class="nosotros__mv-title">Visión</h3>
+            <p class="nosotros__mv-text">
               Convertirnos en marca referente de moda sostenible, reconocida por
               demostrar que la ropa puede tener una segunda vida sin perder diseño
               ni personalidad.
@@ -60,7 +60,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
 
 .nosotros {
-  background: #F5F3EE;
+  background: var(--ecora-cream);
   padding: 7rem 2rem;
 }
 
@@ -74,11 +74,11 @@
 }
 
 /* ── Imagen ── */
-.nosotros__imagen-wrap {
+.nosotros__image-wrap {
   position: relative;
 }
 
-.nosotros__imagen {
+.nosotros__image {
   width: 100%;
   height: 580px;
   object-fit: cover;
@@ -89,7 +89,7 @@
   position: absolute;
   bottom: 2rem;
   left: 2rem;
-  background: #F5F3EE;
+  background: var(--ecora-cream);
   padding: 1.25rem 1.5rem;
   max-width: 200px;
 }
@@ -100,7 +100,7 @@
   font-weight: 500;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #716C59;
+  color: var(--ecora-stone);
   display: block;
   margin-bottom: 0.5rem;
 }
@@ -109,12 +109,12 @@
   font-family: 'Jost', sans-serif;
   font-size: 14px;
   font-weight: 400;
-  color: #0B0B09;
+  color: var(--ecora-black);
   line-height: 1.4;
 }
 
 /* ── Contenido ── */
-.nosotros__contenido {
+.nosotros__content {
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
@@ -126,28 +126,28 @@
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #716C59;
+  color: var(--ecora-stone);
 }
 
-.nosotros__titulo {
+.nosotros__title {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(2.5rem, 4vw, 3.5rem);
   font-weight: 400;
   line-height: 1.15;
-  color: #0B0B09;
+  color: var(--ecora-black);
 }
 
-.nosotros__titulo em {
+.nosotros__title em {
   font-style: italic;
   font-weight: 300;
 }
 
-.nosotros__descripcion {
+.nosotros__description {
   font-family: 'Jost', sans-serif;
   font-size: 15px;
   font-weight: 300;
   line-height: 1.75;
-  color: #716C59;
+  color: var(--ecora-stone);
   max-width: 480px;
 }
 
@@ -156,37 +156,37 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
-  border-top: 1px solid #AEA897;
+  border-top: 1px solid var(--ecora-sand);
   padding-top: 1.75rem;
 }
 
 .nosotros__mv-item {
   padding-right: 2rem;
-  border-left: 2px solid #AEA897;
+  border-left: 2px solid var(--ecora-sand);
   padding-left: 1.25rem;
 }
 
 .nosotros__mv-item:first-child {
   border-left: none;
   padding-left: 0;
-  border-right: 1px solid #AEA897;
+  border-right: 1px solid var(--ecora-sand);
   padding-right: 2rem;
 }
 
-.nosotros__mv-titulo {
+.nosotros__mv-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: 18px;
   font-weight: 400;
-  color: #0B0B09;
+  color: var(--ecora-black);
   margin-bottom: 0.75rem;
 }
 
-.nosotros__mv-texto {
+.nosotros__mv-text {
   font-family: 'Jost', sans-serif;
   font-size: 13px;
   font-weight: 300;
   line-height: 1.7;
-  color: #716C59;
+  color: var(--ecora-stone);
 }
 
 /* ── Responsive ── */
@@ -196,11 +196,11 @@
     gap: 3rem;
   }
 
-  .nosotros__imagen {
+  .nosotros__image {
     height: 420px;
   }
 
-  .nosotros__titulo {
+  .nosotros__title {
     font-size: 2.25rem;
   }
 }
