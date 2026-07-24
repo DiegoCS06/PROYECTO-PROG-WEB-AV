@@ -18,7 +18,7 @@ const navLinks = [
   { label: 'Colección', href: '#coleccion' },
   { label: 'Nosotros', href: '#nosotros' },
   { label: 'Sostenibilidad', href: '#sostenibilidad' },
-  { label: 'Contacto', href: '#contacto' },
+  { label: 'Contacto', href: '#contacto' }
 ]
 </script>
 
@@ -90,28 +90,20 @@ const navLinks = [
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
 
-/* ── Variables ── */
-:root {
-  --ecora-cream:   #F5F3EE;
-  --ecora-stone:   #716C59;
-  --ecora-sand:    #AEA897;
-  --ecora-black:   #0B0B09;
-  --ecora-warm:    #6F5F48;
-}
 
 /* ── Header base ── */
 .ecora-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: #F5F3EE;
+  background: var(--ecora-cream);
   border-bottom: 1px solid transparent;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   font-family: 'Jost', sans-serif;
 }
 
 .ecora-header--scrolled {
-  border-bottom-color: #AEA897;
+  border-bottom-color: var(--ecora-sand);
   box-shadow: 0 2px 16px rgba(11, 11, 9, 0.06);
 }
 
@@ -146,7 +138,7 @@ const navLinks = [
   font-size: 20px;
   font-weight: 400;
   letter-spacing: 0.2em;
-  color: #0B0B09;
+  color: var(--ecora-black);
 }
 
 /* ── Nav desktop ── */
@@ -161,7 +153,7 @@ const navLinks = [
   font-weight: 400;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #716C59;
+  color: var(--ecora-stone);
   text-decoration: none;
   position: relative;
   padding-bottom: 2px;
@@ -175,12 +167,12 @@ const navLinks = [
   left: 0;
   width: 0;
   height: 1px;
-  background: #716C59;
+  background: var(--ecora-stone);
   transition: width 0.25s ease;
 }
 
 .ecora-nav__link:hover {
-  color: #0B0B09;
+  color: var(--ecora-black);
 }
 
 .ecora-nav__link:hover::after {
@@ -200,7 +192,7 @@ const navLinks = [
   background: none;
   border: none;
   cursor: pointer;
-  color: #716C59;
+  color: var(--ecora-stone);
   padding: 4px;
   display: flex;
   align-items: center;
@@ -208,15 +200,15 @@ const navLinks = [
 }
 
 .ecora-actions__cart:hover {
-  color: #0B0B09;
+  color: var(--ecora-black);
 }
 
 .ecora-actions__cart-count {
   position: absolute;
   top: -4px;
   right: -6px;
-  background: #716C59;
-  color: #F5F3EE;
+  background: var(--ecora-stone);
+  color: var(--ecora-cream);
   font-size: 9px;
   font-weight: 500;
   width: 16px;
@@ -244,7 +236,7 @@ const navLinks = [
 .ecora-hamburger span {
   display: block;
   height: 1px;
-  background: #716C59;
+  background: var(--ecora-stone);
   transition: transform 0.3s ease, opacity 0.3s ease, width 0.3s ease;
   transform-origin: center;
 }
@@ -271,8 +263,8 @@ const navLinks = [
 .ecora-mobile-nav {
   display: flex;
   flex-direction: column;
-  background: #F5F3EE;
-  border-top: 1px solid #AEA897;
+  background: var(--ecora-cream);
+  border-top: 1px solid var(--ecora-sand);
   padding: 1.25rem 2rem 1.5rem;
   gap: 0;
 }
@@ -282,7 +274,7 @@ const navLinks = [
   font-weight: 400;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #716C59;
+  color: var(--ecora-stone);
   text-decoration: none;
   padding: 0.875rem 0;
   border-bottom: 1px solid rgba(174, 168, 151, 0.3);
