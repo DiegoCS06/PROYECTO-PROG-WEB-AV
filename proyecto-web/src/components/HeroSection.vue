@@ -1,3 +1,7 @@
+<script setup>
+const emit = defineEmits(['open-collection'])
+</script>
+
 <template>
   <section class="hero">
     <div class="hero__content">
@@ -19,9 +23,9 @@
 
       <!-- BOTONES -->
       <div class="hero__actions">
-        <a href="#coleccion" class="hero__btn hero__btn--primary">
+        <button @click="emit('open-collection')" class="hero__btn hero__btn--primary">
           Ver Colección
-        </a>
+        </button>
         <a href="#nosotros" class="hero__btn hero__btn--secondary">
           Nuestra Historia
         </a>
@@ -47,17 +51,14 @@
 
     <!-- IMAGEN -->
     <div class="hero__image-wrap">
-      <img
-        src="/hero.jpg"
-        alt="Colección Ecora — ropa sostenible, imagen tomada de Pinterest @BeautyHarbour"
-        class="hero__image"
-      >
+      <img src="/hero.jpg" alt="Colección Ecora — ropa sostenible, imagen tomada de Pinterest @BeautyHarbour"
+        class="hero__image">
     </div>
 
     <div class="hero__scroll">
-        <span class="hero__scroll-icon">↓</span>
-        <span class="hero__scroll-text">Colección 2026</span>
-      </div>
+      <span class="hero__scroll-icon">↓</span>
+      <span class="hero__scroll-text">Colección 2026</span>
+    </div>
   </section>
 </template>
 
@@ -232,8 +233,15 @@
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(4px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(4px);
+  }
 }
 
 /* ── Responsive ── */
