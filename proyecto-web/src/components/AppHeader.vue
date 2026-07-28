@@ -1,11 +1,21 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
+const emit = defineEmits([
+  'open-register',
+  'open-login'
+])
+
 const menuOpen = ref(false)
 const scrolled = ref(false)
 
 const toggleMenu = () => menuOpen.value = !menuOpen.value
 const closeMenu = () => menuOpen.value = false
+
+const abrirRegistro = () => {
+  closeMenu()
+  emit('open-register')
+}
 
 const handleScroll = () => {
   scrolled.value = window.scrollY > 20
@@ -20,6 +30,19 @@ const navLinks = [
   { label: 'Sostenibilidad', href: '#sostenibilidad' },
   { label: 'Contacto', href: '#contacto' }
 ]
+
+const abrirLogin = () => {
+  closeMenu()
+  emit('open-login')
+}
+
+defineProps({
+  usuario: {
+    type: Object,
+    default: null
+  }
+})
+
 </script>
 
 <template>
@@ -46,6 +69,37 @@ const navLinks = [
 
       <!-- ACCIONES -->
       <div class="ecora-actions">
+        <div
+          v-if="!usuario"
+          class="ecora-actions__auth"
+        >
+          <button
+            class="ecora-actions__login"
+            type="button"
+            @click="abrirLogin"
+          >
+            Iniciar sesión
+          </button>
+
+          <button
+            class="ecora-actions__register"
+            type="button"
+            @click="abrirRegistro"
+          >
+            Registrarse
+          </button>
+        </div>
+
+        <div
+          v-else
+          class="ecora-actions__user"
+        >
+          <span>
+            Hola, {{ usuario.nombre }}
+          </span>
+        </div>
+        
+        
         <button class="ecora-actions__cart" aria-label="Carrito de compras">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
@@ -82,6 +136,27 @@ const navLinks = [
         >
           {{ link.label }}
         </a>
+        <div v-if="!usuario" class="ecora-mobile-nav__auth">
+          <button
+            class="ecora-mobile-nav__login"
+            type="button"
+            @click="abrirLogin"
+          >
+            Iniciar sesión
+          </button>
+
+          <button
+            class="ecora-mobile-nav__register"
+            type="button"
+            @click="abrirRegistro"
+          >
+            Registrarse
+          </button>
+        </div>
+
+        <div v-else class="ecora-mobile-nav__user">
+          <p>Hola, {{ usuario.nombre }}</p>
+        </div>
       </nav>
     </Transition>
   </header>
@@ -185,6 +260,42 @@ const navLinks = [
   align-items: center;
   gap: 1rem;
   flex-shrink: 0;
+}
+
+.ecora-actions__register {
+  padding: 8px 16px;
+  border: 1px solid var(--ecora-black);
+  background: transparent;
+  color: var(--ecora-black);
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.ecora-actions__register:hover {
+  background: var(--ecora-black);
+  color: var(--ecora-cream);
+}
+
+.ecora-mobile-nav__register {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--ecora-black);
+  background: var(--ecora-black);
+  color: var(--ecora-cream);
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 .ecora-actions__cart {
@@ -307,6 +418,10 @@ const navLinks = [
     display: none;
   }
 
+  .ecora-actions__register {
+  display: none;
+  }
+
   .ecora-hamburger {
     display: flex;
   }
@@ -314,5 +429,66 @@ const navLinks = [
   .ecora-header__inner {
     padding: 0 1.25rem;
   }
+
+  .ecora-actions__auth,
+  .ecora-actions__user {
+    display: none;
+  }
+}
+
+.ecora-actions__auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ecora-actions__login {
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--ecora-black);
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.ecora-actions__login:hover {
+  text-decoration: underline;
+}
+
+.ecora-actions__user {
+  color: var(--ecora-black);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ecora-mobile-nav__auth {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.ecora-mobile-nav__login {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid var(--ecora-black);
+  background: transparent;
+  color: var(--ecora-black);
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.ecora-mobile-nav__user {
+  width: 100%;
+  margin-top: 16px;
+  text-align: center;
+  font-weight: 500;
 }
 </style>
