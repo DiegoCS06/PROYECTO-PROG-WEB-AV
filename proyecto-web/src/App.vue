@@ -51,12 +51,18 @@ const manejarInicioSesion = (usuario) => {
   usuarioSesion.value = usuario
   isLoginOpen.value = false
 }
+
+const cerrarSesion = () => {
+  localStorage.removeItem('ecoraSesion')
+  usuarioSesion.value = null
+}
 </script>
 
 <template>
   <AppHeader :usuario="usuarioSesion"
   @open-register="isRegisterOpen = true"
   @open-login="isLoginOpen = true"
+  @logout="cerrarSesion"
 />
   <HeroSection @open-collection="isModalOpen = true" />
   <NosotrosSection />

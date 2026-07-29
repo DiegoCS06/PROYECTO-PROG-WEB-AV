@@ -3,7 +3,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const emit = defineEmits([
   'open-register',
-  'open-login'
+  'open-login',
+  'logout'
 ])
 
 const menuOpen = ref(false)
@@ -15,6 +16,16 @@ const closeMenu = () => menuOpen.value = false
 const abrirRegistro = () => {
   closeMenu()
   emit('open-register')
+}
+
+const abrirLogin = () => {
+  closeMenu()
+  emit('open-login')
+}
+
+const cerrarSesion = () => {
+  closeMenu()
+  emit('logout')
 }
 
 const handleScroll = () => {
@@ -30,11 +41,6 @@ const navLinks = [
   { label: 'Sostenibilidad', href: '#sostenibilidad' },
   { label: 'Contacto', href: '#contacto' }
 ]
-
-const abrirLogin = () => {
-  closeMenu()
-  emit('open-login')
-}
 
 defineProps({
   usuario: {
@@ -94,9 +100,17 @@ defineProps({
           v-else
           class="ecora-actions__user"
         >
-          <span>
+          <span class="ecora-actions__user-name">
             Hola, {{ usuario.nombre }}
           </span>
+
+          <button
+            class="ecora-actions__logout"
+            type="button"
+            @click="cerrarSesion"
+          >
+            Cerrar sesión
+          </button>
         </div>
         
         
@@ -153,10 +167,20 @@ defineProps({
             Registrarse
           </button>
         </div>
-
+        
         <div v-else class="ecora-mobile-nav__user">
-          <p>Hola, {{ usuario.nombre }}</p>
-        </div>
+          <p>
+            Hola, {{ usuario.nombre }}
+          </p>
+
+          <button
+            class="ecora-mobile-nav__logout"
+            type="button"
+            @click="cerrarSesion"
+          >
+            Cerrar sesión
+          </button>
+        </div>       
       </nav>
     </Transition>
   </header>
@@ -490,5 +514,68 @@ defineProps({
   margin-top: 16px;
   text-align: center;
   font-weight: 500;
+}
+
+.ecora-actions__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ecora-actions__user-name {
+  color: var(--ecora-black);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ecora-actions__logout {
+  padding: 8px 12px;
+  border: 1px solid var(--ecora-black);
+  background: transparent;
+  color: var(--ecora-black);
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.ecora-actions__logout:hover {
+  background: var(--ecora-black);
+  color: var(--ecora-cream);
+}
+
+.ecora-mobile-nav__user {
+  width: 100%;
+  margin-top: 16px;
+  text-align: center;
+}
+
+.ecora-mobile-nav__user p {
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.ecora-mobile-nav__logout {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--ecora-black);
+  background: transparent;
+  color: var(--ecora-black);
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.ecora-mobile-nav__logout:hover {
+  background: var(--ecora-black);
+  color: var(--ecora-cream);
 }
 </style>
