@@ -1,4 +1,7 @@
 <script setup>
+import { ref } from 'vue'
+import ProductDetalle from './ProductDetalle.vue'
+
 const emit = defineEmits(['close'])
 
 const props = defineProps({
@@ -7,6 +10,16 @@ const props = defineProps({
     required: true,
   },
 })
+
+const productoSeleccionado = ref(null)
+
+const abrirDetalle = (producto) => {
+  productoSeleccionado.value = producto
+}
+
+const cerrarDetalle = () => {
+  productoSeleccionado.value = null
+}
 </script>
 
 <template>
@@ -18,7 +31,7 @@ const props = defineProps({
 
       <div style="display: flex; flex-direction: column;" class="modal-header">
         <p class="modal-eyebrow">Colección Ecora</p>
-        <p class="modal-description">   
+        <p class="modal-description">
           Explora piezas únicas creadas con materiales reciclados y un diseño atemporal.
         </p>
       </div>
@@ -29,7 +42,7 @@ const props = defineProps({
           <div class="item-body">
             <h2>{{ producto.nombre }}</h2>
             <p class="item-price">{{ producto.precio }}</p>
-            <button class="detail-button" type="button">
+            <button class="detail-button" type="button" @click="abrirDetalle(producto)">
               Ver detalles
             </button>
           </div>
@@ -41,6 +54,8 @@ const props = defineProps({
       </div>
     </div>
   </div>
+
+  <ProductDetalle v-if="productoSeleccionado" :product="productoSeleccionado" @close="cerrarDetalle" />
 </template>
 
 <style scoped>
