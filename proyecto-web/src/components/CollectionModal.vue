@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import ProductDetalle from './ProductDetalle.vue'
 
 const emit = defineEmits(['close'])
@@ -12,6 +12,10 @@ const props = defineProps({
 })
 
 const productoSeleccionado = ref(null)
+const busqueda = ref('')
+const filtroGenero = ref('Todos')
+const filtroTipo = ref('Todos')
+const ordenPrecio = ref('default')
 
 const abrirDetalle = (producto) => {
   productoSeleccionado.value = producto
@@ -20,6 +24,61 @@ const abrirDetalle = (producto) => {
 const cerrarDetalle = () => {
   productoSeleccionado.value = null
 }
+
+const parsearPrecio = (producto) => {
+  const valor = `${producto?.precio || ''}`
+  const soloNumeros = valor.replace(/[^\d]/g, '')
+  return Number(soloNumeros || 0)
+}
+
+const generosDisponibles = computed(() => {
+  const generos = (props.catalogo || [])
+    .map((producto) => producto?.categoria?.[0])
+    .filter(Boolean)
+    .map((valor) => valor.trim())
+
+  return ['Todos', ...new Set(generos)]
+})
+
+const tiposDisponibles = computed(() => {
+  const tipos = (props.catalogo || [])
+    .map((producto) => producto?.categoria?.[1])
+    .filter(Boolean)
+    .map((valor) => valor.trim())
+
+  return ['Todos', ...new Set(tipos)]
+})
+
+const productosFiltrados = computed(() => {
+  let lista = [...(props.catalogo || [])]
+
+  if (busqueda.value.trim()) {
+    const texto = busqueda.value.trim().toLowerCase()
+    lista = lista.filter((producto) =>
+      producto?.nombre?.toLowerCase().includes(texto)
+    )
+  }
+
+  if (filtroGenero.value !== 'Todos') {
+    lista = lista.filter((producto) =>
+      producto?.categoria?.[0]?.toLowerCase() === filtroGenero.value.toLowerCase()
+    )
+  }
+
+  if (filtroTipo.value !== 'Todos') {
+    lista = lista.filter((producto) =>
+      producto?.categoria?.[1]?.toLowerCase() === filtroTipo.value.toLowerCase()
+    )
+  }
+
+  if (ordenPrecio.value === 'asc') {
+    lista.sort((a, b) => parsearPrecio(a) - parsearPrecio(b))
+  } else if (ordenPrecio.value === 'desc') {
+    lista.sort((a, b) => parsearPrecio(b) - parsearPrecio(a))
+  }
+
+  return lista
+})
 </script>
 
 <template>
@@ -36,8 +95,37 @@ const cerrarDetalle = () => {
         </p>
       </div>
 
-      <div v-if="catalogo?.length" class="items-grid">
-        <article v-for="producto in catalogo" :key="producto.nombre" class="item-card">
+      <div v-if="catalogo?.length" class="catalog-controls">
+        <input
+          v-model="busqueda"
+          class="search-input"
+          type="text"
+          placeholder="Buscar por nombre"
+        />
+
+        <div class="filter-group">
+          <select v-model="filtroGenero" class="filter-select">
+            <option v-for="genero in generosDisponibles" :key="genero" :value="genero">
+              {{ genero === 'Todos' ? 'Todos los géneros' : genero }}
+            </option>
+          </select>
+
+          <select v-model="filtroTipo" class="filter-select">
+            <option v-for="tipo in tiposDisponibles" :key="tipo" :value="tipo">
+              {{ tipo === 'Todos' ? 'Todos los tipos' : tipo }}
+            </option>
+          </select>
+
+          <select v-model="ordenPrecio" class="filter-select">
+            <option value="default">Ordenar por</option>
+            <option value="asc">Precio: menor a mayor</option>
+            <option value="desc">Precio: mayor a menor</option>
+          </select>
+        </div>
+      </div>
+
+      <div v-if="productosFiltrados.length" class="items-grid">
+        <article v-for="producto in productosFiltrados" :key="producto.nombre" class="item-card">
           <img class="product-image" :src="producto.imagen" :alt="producto.nombre">
           <div class="item-body">
             <h2>{{ producto.nombre }}</h2>
@@ -50,7 +138,7 @@ const cerrarDetalle = () => {
       </div>
 
       <div v-else class="empty-state">
-        <p>No hay productos disponibles por el momento.</p>
+        <p>No se encontraron productos con esos filtros.</p>
       </div>
     </div>
   </div>
@@ -134,6 +222,42 @@ const cerrarDetalle = () => {
   color: var(--ecora-stone, #716C59);
   line-height: 1.7;
   max-width: 640px;
+}
+
+.catalog-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.search-input,
+.filter-select {
+  width: 100%;
+  border: 1px solid rgba(113, 108, 89, 0.2);
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.95rem;
+  color: var(--ecora-black, #0B0B09);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.search-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: var(--ecora-warm, #6F5F48);
+  box-shadow: 0 0 0 3px rgba(111, 95, 72, 0.12);
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.filter-select {
+  flex: 1 1 180px;
 }
 
 .items-grid {
