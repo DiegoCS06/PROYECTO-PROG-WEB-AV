@@ -23,7 +23,6 @@ onMounted(async () => {
       throw new Error(`HTTP ${response.status}`)
     }
     data.value = await response.json()
-    console.log(data.value)
 
   } catch (err) {
     error.value = 'No Products found! :('
