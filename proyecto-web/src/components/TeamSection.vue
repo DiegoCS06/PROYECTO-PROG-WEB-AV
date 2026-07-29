@@ -101,7 +101,7 @@ const teamQuote =
 
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6rem;
   max-width: 1000px;
   margin: 0 auto;
@@ -109,6 +109,7 @@ const teamQuote =
 
 .member-card {
   text-align: center;
+  min-width: 0;
 }
 
 .member-image-wrapper {
@@ -164,5 +165,20 @@ const teamQuote =
   font-style: italic;
   font-weight: 200;
   line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .team-section {
+    padding: 5rem 0;
+  }
+
+  .team-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .team-divider {
+    margin: 4rem auto 2.5rem;
+  }
 }
 </style>
