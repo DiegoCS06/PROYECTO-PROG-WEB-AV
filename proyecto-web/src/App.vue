@@ -9,6 +9,8 @@ import TeamSection from './components/TeamSection.vue';
 import ContactoSection from './components/ContactoSection.vue';
 import AppFooter from './AppFooter.vue';
 import CollectionModal from './components/CollectionModal.vue';
+import RegisterModal from './components/RegisterModal.vue'
+import LoginModal from './components/LoginModal.vue'
 
 const data = ref([])
 const error = ref('')
@@ -27,13 +29,41 @@ onMounted(async () => {
     error.value = 'No Products found! :('
     console.error(err)
   }
+
+  const sesionGuardada = localStorage.getItem('ecoraSesion')
+
+  if (sesionGuardada) {
+  usuarioSesion.value = JSON.parse(sesionGuardada)
+  }
 })
 
 const isModalOpen = ref(false)
+const isRegisterOpen = ref(false)
+
+const manejarRegistroExitoso = (nuevoUsuario) => {
+  console.log('Usuario registrado:', nuevoUsuario)
+}
+
+const isLoginOpen = ref(false)
+const usuarioSesion = ref(null)
+
+const manejarInicioSesion = (usuario) => {
+  usuarioSesion.value = usuario
+  isLoginOpen.value = false
+}
+
+const cerrarSesion = () => {
+  localStorage.removeItem('ecoraSesion')
+  usuarioSesion.value = null
+}
 </script>
 
 <template>
-  <AppHeader />
+  <AppHeader :usuario="usuarioSesion"
+  @open-register="isRegisterOpen = true"
+  @open-login="isLoginOpen = true"
+  @logout="cerrarSesion"
+/>
   <HeroSection @open-collection="isModalOpen = true" />
   <NosotrosSection />
   <ValoresSection />
@@ -44,6 +74,16 @@ const isModalOpen = ref(false)
 
   <CollectionModal v-if="isModalOpen" @close="isModalOpen = false" :catalogo="data.catalogo" />
 
+  <RegisterModal
+  v-if="isRegisterOpen"
+  @close="isRegisterOpen = false"
+  @registered="manejarRegistroExitoso"
+  />
+  <LoginModal
+  v-if="isLoginOpen"
+  @close="isLoginOpen = false"
+  @login-success="manejarInicioSesion"
+  />
 </template>
 
 <style>
