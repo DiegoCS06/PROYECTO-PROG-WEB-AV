@@ -2,9 +2,11 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const emit = defineEmits([
+  'toggle-sidebar',
   'open-register',
   'open-login',
-  'logout'
+  'logout',
+  'open-cart'
 ])
 
 const menuOpen = ref(false)
@@ -46,7 +48,10 @@ defineProps({
   usuario: {
     type: Object,
     default: null
-  }
+  },
+  cartCount: {
+    type: Number,
+    default: 0 }
 })
 
 </script>
@@ -109,19 +114,19 @@ defineProps({
             type="button"
             @click="cerrarSesion"
           >
-            Cerrar sesión
+          Cerrar sesión
           </button>
         </div>
-        
-        
-        <button class="ecora-actions__cart" aria-label="Carrito de compras">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 01-8 0"/>
+        <div>
+          <button class="ecora-actions__cart" @click="emit('open-cart')" aria-label="Carrito">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 01-8 0" />
           </svg>
-          <span class="ecora-actions__cart-count">0</span>
-        </button>
+            <span class="ecora-actions__cart-count">{{ cartCount }}</span>
+          </button>
+        </div>
 
         <!-- HAMBURGUESA MOBILE -->
         <button
@@ -436,30 +441,6 @@ defineProps({
   transform: translateY(-8px);
 }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .ecora-nav {
-    display: none;
-  }
-
-  .ecora-actions__register {
-  display: none;
-  }
-
-  .ecora-hamburger {
-    display: flex;
-  }
-
-  .ecora-header__inner {
-    padding: 0 1.25rem;
-  }
-
-  .ecora-actions__auth,
-  .ecora-actions__user {
-    display: none;
-  }
-}
-
 .ecora-actions__auth {
   display: flex;
   align-items: center;
@@ -578,4 +559,28 @@ defineProps({
   background: var(--ecora-black);
   color: var(--ecora-cream);
 }
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .ecora-nav {
+    display: none;
+  }
+
+  .ecora-actions__register {
+  display: none;
+  }
+
+  .ecora-hamburger {
+    display: flex;
+  }
+
+  .ecora-header__inner {
+    padding: 0 1.25rem;
+  }
+
+  .ecora-actions__auth,
+  .ecora-actions__user {
+    display: none;
+  }
+}
+
 </style>

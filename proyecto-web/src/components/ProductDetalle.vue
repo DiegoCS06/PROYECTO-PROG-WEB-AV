@@ -1,4 +1,5 @@
 <script setup>
+import { ref, watch, onMounted } from 'vue'
 const props = defineProps({
     product: {
         type: Object,
@@ -6,7 +7,54 @@ const props = defineProps({
     },
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'add-to-cart'])
+const tallaSeleccionada = ref(null)
+const cantidad = ref(1)
+const mensajeExito = ref('')
+const mensajeError = ref('')
+
+onMounted(() => {
+    if (props.product?.tallas?.length === 1 &&
+        props.product.tallas[0] === 'Unique') {
+        tallaSeleccionada.value = 'Unique'
+    }
+})
+
+const seleccionarTalla = (talla) => {
+    tallaSeleccionada.value = talla
+    mensajeError.value = ''
+}
+
+const agregarAlCarrito = () => {
+    mensajeError.value = ''
+    mensajeExito.value = ''
+
+    if (!tallaSeleccionada.value) {
+        mensajeError.value = 'Por favor seleccioná una talla.'
+        return
+    }
+
+    if (!cantidad.value || cantidad.value < 1) {
+        mensajeError.value = 'La cantidad debe ser al menos 1.'
+        return
+    }
+
+    emit('add-to-cart', {
+        id: props.product.id,
+        nombre: props.product.nombre,
+        precio: props.product.precio,
+        imagen: props.product.imagen,
+        talla: tallaSeleccionada.value,
+        cantidad: cantidad.value,
+    })
+
+    mensajeExito.value = `¡${props.product.nombre} agregado al carrito!`
+
+    // Cerrar modal después de mostrar el mensaje
+    setTimeout(() => {
+        emit('close')
+    }, 1800)
+}
 </script>
 
 <template>
@@ -34,26 +82,40 @@ const emit = defineEmits(['close'])
                         <p>{{ product?.categoria?.join(' • ') || 'Categoría.' }}</p>
                     </section>
 
+                    <!-- TALLAS -->
                     <section class="detail-section">
-                        <h3>Tallas</h3>
-                        <p>{{ product?.tallas?.join(', ') || 'Tallas.' }}</p>
-                    </section>
-
-                    <section class="detail-section cart-section">
-                        <div class="cart-controls">
-                            <input class="cart-quantity" type="number" min="1" step="1" value="1" required>
-                            <button class="cart-button" type="button">
-                                Añadir a carrito
+                        <h3>Seleccioná una talla</h3>
+                        <div class="talla-grid">
+                            <button v-for="talla in product?.tallas" :key="talla" class="talla-btn"
+                                :class="{ 'talla-btn--active': tallaSeleccionada === talla }" type="button"
+                                @click="seleccionarTalla(talla)">
+                                {{ talla }}
                             </button>
                         </div>
                     </section>
 
+                    <!-- CANTIDAD Y BOTÓN -->
+                    <section class="detail-section cart-section">
+                        <div class="cart-controls">
+                            <div class="quantity-wrap">
+                                <button type="button" class="quantity-btn"
+                                    @click="cantidad > 1 ? cantidad-- : null">−</button>
+                                <input v-model.number="cantidad" class="cart-quantity" type="number" min="1" step="1">
+                                <button type="button" class="quantity-btn" @click="cantidad++">+</button>
+                            </div>
+                            <button class="cart-button" type="button" @click="agregarAlCarrito">
+                                Añadir al carrito
+                            </button>
+                        </div>
+                        <!-- Mensajes -->
+                        <p v-if="mensajeError" class="msg msg--error">{{ mensajeError }}</p>
+                        <p v-if="mensajeExito" class="msg msg--success">{{ mensajeExito }}</p>
+                    </section>
                 </div>
             </div>
         </div>
     </div>
 </template>
-
 <style scoped>
 .detail-overlay {
     position: fixed;
@@ -150,8 +212,36 @@ const emit = defineEmits(['close'])
     color: var(--ecora-stone, #716C59);
 }
 
-.cart-section {
-    padding-top: 0.8rem;
+.tallas-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.talla-btn {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--ecora-sand);
+    background: var(--ecora-cream);
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--ecora-black);
+}
+
+.talla-btn:hover {
+    border-color: var(--ecora-stone);
+    background: var(--ecora-cream);
+}
+
+.talla-btn--active {
+    background: #F5F3EE;
+    border-color: var(--ecora-black);
+    border-width: 2px;
+    color: var(--ecora-black);
+    font-weight: 600;
 }
 
 .cart-controls {
@@ -160,23 +250,61 @@ const emit = defineEmits(['close'])
     align-items: center;
     flex-wrap: wrap;
 }
-
-.cart-quantity {
-    width: 4.5rem;
-    padding: 0.7rem 0.8rem;
+.quantity-wrap {
+    display: flex;
+    align-items: center;
     border: 1px solid rgba(113, 108, 89, 0.25);
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.85);
-    color: var(--ecora-black, #0B0B09);
+    overflow: hidden;
+    min-width: 110px;
+}
+
+.quantity-btn {
+    width: 36px;
+    height: 40px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--ecora-black);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.quantity-btn:hover {
+    background: rgba(113, 108, 89, 0.1);
+}
+
+.cart-quantity {
+    width: 38px;
+    min-width: 38px;
+    text-align: center;
+    border: none;
+    background: transparent;
     font-family: 'Jost', sans-serif;
     font-size: 0.95rem;
+    color: var(--ecora-black);
     outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    padding: 0;
+}
+
+.cart-quantity::-webkit-inner-spin-button,
+.cart-quantity::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .cart-quantity:focus {
     border-color: var(--ecora-warm, #6F5F48);
     box-shadow: 0 0 0 3px rgba(111, 95, 72, 0.12);
 }
+
 
 .cart-button {
     border: none;
@@ -195,6 +323,20 @@ const emit = defineEmits(['close'])
     background: var(--ecora-warm, #6F5F48);
 }
 
+.msg {
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    margin-top: 0.75rem;
+}
+
+.msg--error {
+    color: #c0392b;
+}
+
+.msg--success {
+    color: #27ae60;
+}
+
 @media (max-width: 720px) {
     .detail-grid {
         grid-template-columns: 1fr;
@@ -202,6 +344,25 @@ const emit = defineEmits(['close'])
 
     .detail-modal {
         padding: 1.5rem;
+    }
+
+    .cart-quantity {
+        width: 6rem;
+        /* más ancho para que quepan las flechas */
+        border-radius: 8px;
+        -webkit-appearance: auto;
+        appearance: auto;
+    }
+
+    .cart-quantity::-webkit-inner-spin-button,
+    .cart-quantity::-webkit-outer-spin-button {
+        opacity: 1;
+        height: auto;
+    }
+
+    .cart-controls {
+        flex-wrap: nowrap;
+        /* evita que el botón se rompa a otra línea */
     }
 }
 </style>
