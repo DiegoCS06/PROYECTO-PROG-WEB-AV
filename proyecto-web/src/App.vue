@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import AppHeader from './components/AppHeader.vue'
 import HeroSection from './components/HeroSection.vue'
 import NosotrosSection from './components/NosotrosSection.vue'
@@ -11,6 +11,7 @@ import AppFooter from './AppFooter.vue';
 import CollectionModal from './components/CollectionModal.vue';
 import RegisterModal from './components/RegisterModal.vue'
 import LoginModal from './components/LoginModal.vue'
+import CartSide from './components/CartSide.vue'
 
 const data = ref([])
 const error = ref('')
@@ -32,7 +33,7 @@ onMounted(async () => {
   const sesionGuardada = localStorage.getItem('ecoraSesion')
 
   if (sesionGuardada) {
-  usuarioSesion.value = JSON.parse(sesionGuardada)
+    usuarioSesion.value = JSON.parse(sesionGuardada)
   }
 })
 
@@ -55,14 +56,47 @@ const cerrarSesion = () => {
   localStorage.removeItem('ecoraSesion')
   usuarioSesion.value = null
 }
+
+// ── Estado del carrito ──
+const cartOpen = ref(false)
+const cartItems = ref([])
+
+const addToCart = (item) => {
+  // Buscar si ya existe el mismo producto con la misma talla
+  const existing = cartItems.value.find(
+    i => i.id === item.id && i.talla === item.talla
+  )
+
+  if (existing) {
+    existing.cantidad += item.cantidad
+  } else {
+    cartItems.value.push({ ...item })
+  }
+}
+
+const removeFromCart = (index) => {
+  cartItems.value.splice(index, 1)
+}
+
+const cartCount = computed(() =>
+  cartItems.value.reduce((sum, i) => sum + i.cantidad, 0)
+)
+
+const cartTotal = computed(() =>
+  cartItems.value.reduce((sum, i) => {
+    const precio = parseInt(i.precio.replace(/\D/g, ''))
+    return sum + precio * i.cantidad
+  }, 0)
+)
+
+const clearCart = () => {
+  cartItems.value = []
+}
 </script>
 
 <template>
-  <AppHeader :usuario="usuarioSesion"
-  @open-register="isRegisterOpen = true"
-  @open-login="isLoginOpen = true"
-  @logout="cerrarSesion"
-/>
+  <AppHeader :usuario="usuarioSesion" :cart-count="cartCount" @open-register="isRegisterOpen = true"
+    @open-login="isLoginOpen = true" @logout="cerrarSesion" @open-cart="cartOpen = true" />
   <HeroSection @open-collection="isModalOpen = true" />
   <NosotrosSection />
   <ValoresSection />
@@ -71,18 +105,20 @@ const cerrarSesion = () => {
   <ContactoSection />
   <AppFooter />
 
-  <CollectionModal v-if="isModalOpen" @close="isModalOpen = false" :catalogo="data.catalogo" />
+  <CollectionModal v-if="isModalOpen" @close="isModalOpen = false" :catalogo="data.catalogo" @add-to-cart="addToCart" />
 
-  <RegisterModal
-  v-if="isRegisterOpen"
-  @close="isRegisterOpen = false"
-  @registered="manejarRegistroExitoso"
-  />
-  <LoginModal
-  v-if="isLoginOpen"
-  @close="isLoginOpen = false"
-  @login-success="manejarInicioSesion"
-  />
+<CartSide
+  v-if="cartOpen"
+  :items="cartItems"
+  :total="cartTotal"
+  :usuario="usuarioSesion"
+  @close="cartOpen = false"
+  @remove-item="removeFromCart"
+  @cart-paid="() => { clearCart(); cartOpen = false }"
+/>
+
+  <RegisterModal v-if="isRegisterOpen" @close="isRegisterOpen = false" @registered="manejarRegistroExitoso" />
+  <LoginModal v-if="isLoginOpen" @close="isLoginOpen = false" @login-success="manejarInicioSesion" />
 </template>
 
 <style>
@@ -120,5 +156,11 @@ img {
 a {
   text-decoration: none;
   color: inherit;
+}
+
+.form-input,
+.form-group {
+  min-width: 0;
+  box-sizing: border-box;
 }
 </style>
