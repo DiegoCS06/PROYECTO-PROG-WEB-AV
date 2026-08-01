@@ -3,7 +3,13 @@
 // los <a href="#"> por <router-link :to="...">.
 const currentYear = new Date().getFullYear()
 
-const shopLinks = ['Nueva colección', 'Camisas', 'Vestidos', 'Chaquetas', 'Pantalones']
+const shopLinks = [
+  { label: 'Nueva colección', tipo: 'Todos', href: '#coleccion' },
+  { label: 'Camisetas', tipo: 'Camisetas', href: '#coleccion' },
+  { label: 'Faldas', tipo: 'Faldas', href: '#coleccion' },
+  { label: 'Chaquetas', tipo: 'Jacket', href: '#coleccion' },
+  { label: 'Pantalones', tipo: 'Pantalones', href: '#coleccion' },
+]
 
 const companyLinks = [
   { label: 'Nuestra historia', href: '#team' },
@@ -30,6 +36,11 @@ const socials = [
     icon: `<path d="M22 5.9c-.7.3-1.4.5-2.2.6.8-.5 1.4-1.2 1.7-2.1-.7.5-1.6.8-2.4 1a3.8 3.8 0 0 0-6.5 3.5A10.8 10.8 0 0 1 4.9 4.9a3.8 3.8 0 0 0 1.2 5.1c-.6 0-1.2-.2-1.7-.5v.1c0 1.9 1.3 3.4 3.1 3.8-.6.1-1.1.2-1.7.1a3.8 3.8 0 0 0 3.6 2.6A7.6 7.6 0 0 1 3 17.5a10.7 10.7 0 0 0 5.8 1.7c7 0 10.8-5.9 10.8-11v-.5c.7-.5 1.4-1.2 1.9-2z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>`,
   },
 ]
+const emit = defineEmits(['filtrar-coleccion'])
+
+const irAColeccion = (tipo) => {
+  emit('filtrar-coleccion', tipo)
+}
 </script>
 <template>
   <footer class="app-footer">
@@ -58,12 +69,13 @@ const socials = [
         <div class="col-6 col-lg-3">
           <h3 class="footer-heading">Tienda</h3>
           <ul class="footer-links list-unstyled">
-            <li v-for="link in shopLinks" :key="link">
-              <a href="#">{{ link }}</a>
+            <li v-for="link in shopLinks" :key="link.label">
+              <a href="#coleccion" @click.prevent="irAColeccion(link.tipo, link.href)">
+                {{ link.label }}
+              </a>
             </li>
           </ul>
         </div>
-
         <div class="col-6 col-lg-3 offset-lg-1">
           <h3 class="footer-heading">Empresa</h3>
           <ul class="footer-links list-unstyled">

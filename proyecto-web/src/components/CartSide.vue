@@ -14,7 +14,6 @@ const props = defineProps({
     usuario: { type: Object, default: null }
 })
 watch(() => props.usuario, (val) => {
-  console.log('Usuario en CartSide:', val)
 }, { immediate: true })
 const emit = defineEmits(['close', 'remove-item', 'cart-paid'])
 

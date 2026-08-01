@@ -1,5 +1,6 @@
 <script setup>
 const emit = defineEmits(['open-collection'])
+const Navlink= {href: '#coleccion'}
 </script>
 
 <template>
@@ -55,10 +56,10 @@ const emit = defineEmits(['open-collection'])
         class="hero__image">
     </div>
 
-    <div class="hero__scroll">
+    <a href="#coleccion" class="hero__scroll">
       <span class="hero__scroll-icon">↓</span>
       <span class="hero__scroll-text">Colección 2026</span>
-    </div>
+    </a>
   </section>
 </template>
 
@@ -207,7 +208,7 @@ const emit = defineEmits(['open-collection'])
 /* Badge colección 2026*/
 .hero__scroll {
   position: absolute;
-  bottom: 3rem;
+  bottom: 2rem;
   right: 2rem;
   display: flex;
   align-items: center;
@@ -215,6 +216,8 @@ const emit = defineEmits(['open-collection'])
   background: #F5F3EE;
   padding: 0.625rem 1.25rem;
   z-index: 10;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .hero__scroll-icon {
