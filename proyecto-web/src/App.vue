@@ -1,13 +1,14 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, nextTick } from 'vue';
 import AppHeader from './components/AppHeader.vue'
 import HeroSection from './components/HeroSection.vue'
+import CollectionSection from './components/CollectionSection.vue';
 import NosotrosSection from './components/NosotrosSection.vue'
 import ProcesoSection from './components/ProcesoSection.vue';
 import ValoresSection from './components/ValoresSection.vue';
 import TeamSection from './components/TeamSection.vue';
 import ContactoSection from './components/ContactoSection.vue';
-import AppFooter from './AppFooter.vue';
+import AppFooter from './components/AppFooter.vue';
 import CollectionModal from './components/CollectionModal.vue';
 import RegisterModal from './components/RegisterModal.vue'
 import LoginModal from './components/LoginModal.vue'
@@ -92,20 +93,29 @@ const cartTotal = computed(() =>
 const clearCart = () => {
   cartItems.value = []
 }
+
+const filtroColeccion = ref('Todos')
+
+const aplicarFiltro = async (tipo) => {
+  filtroColeccion.value = tipo
+  await nextTick()
+  document.querySelector('#coleccion')?.scrollIntoView({ behavior: 'smooth' })
+}
 </script>
 
 <template>
   <AppHeader :usuario="usuarioSesion" :cart-count="cartCount" @open-register="isRegisterOpen = true"
     @open-login="isLoginOpen = true" @logout="cerrarSesion" @open-cart="cartOpen = true" />
   <HeroSection @open-collection="isModalOpen = true" />
+  <CollectionSection :catalogo="data.catalogo" :filtro="filtroColeccion" @add-to-cart="addToCart" />
   <NosotrosSection />
   <ValoresSection />
   <TeamSection />
   <ProcesoSection />
   <ContactoSection />
-  <AppFooter />
+  <AppFooter @filtrar-coleccion="aplicarFiltro"/>
 
-  <CollectionModal v-if="isModalOpen" @close="isModalOpen = false" :catalogo="data.catalogo" @add-to-cart="addToCart" />
+  <CollectionModal v-if="isModalOpen" @close="isModalOpen = false" :catalogo="data.catalogo" :filtro-inicial="filtroColeccion" @add-to-cart="addToCart" />
 
 <CartSide
   v-if="cartOpen"

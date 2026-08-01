@@ -180,9 +180,9 @@ const productosFiltrados = computed(() => {
 }
 
 .modal-close {
-  position: absolute;
+  position: sticky;
   top: 1rem;
-  right: 1rem;
+  left: calc(100% - 3rem);
   width: 2.5rem;
   height: 2.5rem;
   border: none;
