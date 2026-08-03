@@ -178,9 +178,14 @@ const construirProducto = () => {
     .map((talla) => talla.trim())
     .filter(Boolean)
 
+  const categorias = formulario.categoria
+    .split(',')
+    .map((categoria) => categoria.trim())
+    .filter(Boolean)
+
   return {
     nombre: formulario.nombre.trim(),
-    categoria: formulario.categoria.trim(),
+    categoria: categorias,
     descripcion: formulario.descripcion.trim(),
     precio: Number(formulario.precio),
     inventario: Number(formulario.inventario),
@@ -219,7 +224,9 @@ const prepararEdicion = (producto) => {
   modoEdicion.value = true
 
   formulario.nombre = producto.nombre ?? ''
-  formulario.categoria = producto.categoria ?? ''
+  formulario.categoria = Array.isArray(producto.categoria)
+  ? producto.categoria.join(', ')
+  : producto.categoria ?? ''
   formulario.descripcion = producto.descripcion ?? ''
   formulario.precio = producto.precio ?? ''
   formulario.inventario = producto.inventario ?? 0

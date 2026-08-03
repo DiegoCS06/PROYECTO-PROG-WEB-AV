@@ -6,6 +6,7 @@ const emit = defineEmits([
   'open-register',
   'open-login',
   'open-admin',
+  'open-orders',
   'logout',
   'open-cart'
 ])
@@ -60,6 +61,11 @@ const abrirPanelAdministrador = () => {
   emit('open-admin')
 }
 
+const abrirOrdenes = () => {
+  closeMenu()
+  emit('open-orders')
+}
+
 </script>
 
 <template>
@@ -111,6 +117,15 @@ const abrirPanelAdministrador = () => {
         <span class="ecora-actions__user-name">
           Hola, {{ usuario.nombre }}
         </span>
+
+        <button
+          v-if="usuario.rol === 'cliente'"
+          class="ecora-actions__orders"
+          type="button"
+          @click="abrirOrdenes"
+        >
+          Mis pedidos
+        </button>
 
         <button
           v-if="usuario.rol === 'administrador'"
@@ -190,6 +205,15 @@ const abrirPanelAdministrador = () => {
           <p>
             Hola, {{ usuario.nombre }}
           </p>
+
+          <button
+            v-if="usuario.rol === 'cliente'"
+            class="ecora-mobile-nav__orders"
+            type="button"
+            @click="abrirOrdenes"
+          >
+            Mis pedidos
+          </button>
 
           <button
             v-if="usuario.rol === 'administrador'"
@@ -603,6 +627,47 @@ const abrirPanelAdministrador = () => {
   .ecora-actions__user {
     display: none;
   }
+}
+
+.ecora-actions__orders {
+  padding: 8px 12px;
+  border: 1px solid var(--ecora-warm);
+  background: transparent;
+  color: var(--ecora-warm);
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.ecora-actions__orders:hover {
+  background: var(--ecora-warm);
+  color: var(--ecora-cream);
+}
+
+.ecora-mobile-nav__orders {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid var(--ecora-warm);
+  background: transparent;
+  color: var(--ecora-warm);
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.ecora-mobile-nav__orders:hover {
+  background: var(--ecora-warm);
+  color: var(--ecora-cream);
 }
 
 .ecora-actions__admin {
