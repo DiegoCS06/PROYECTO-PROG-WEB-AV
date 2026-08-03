@@ -5,6 +5,7 @@ const emit = defineEmits([
   'toggle-sidebar',
   'open-register',
   'open-login',
+  'open-admin',
   'logout',
   'open-cart'
 ])
@@ -54,6 +55,11 @@ defineProps({
     default: 0 }
 })
 
+const abrirPanelAdministrador = () => {
+  closeMenu()
+  emit('open-admin')
+}
+
 </script>
 
 <template>
@@ -101,22 +107,29 @@ defineProps({
           </button>
         </div>
 
-        <div
-          v-else
-          class="ecora-actions__user"
-        >
-          <span class="ecora-actions__user-name">
-            Hola, {{ usuario.nombre }}
-          </span>
+        <div v-else class="ecora-actions__user">
+        <span class="ecora-actions__user-name">
+          Hola, {{ usuario.nombre }}
+        </span>
 
-          <button
-            class="ecora-actions__logout"
-            type="button"
-            @click="cerrarSesion"
-          >
+        <button
+          v-if="usuario.rol === 'administrador'"
+          class="ecora-actions__admin"
+          type="button"
+          @click="abrirPanelAdministrador"
+        >
+          Panel administrativo
+        </button>
+
+        <button
+          class="ecora-actions__logout"
+          type="button"
+          @click="cerrarSesion"
+        >
           Cerrar sesión
-          </button>
-        </div>
+        </button>
+      </div>
+
         <div>
           <button class="ecora-actions__cart" @click="emit('open-cart')" aria-label="Carrito">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -173,10 +186,19 @@ defineProps({
           </button>
         </div>
         
-        <div v-else class="ecora-mobile-nav__user">
+         <div v-else class="ecora-mobile-nav__user">
           <p>
             Hola, {{ usuario.nombre }}
           </p>
+
+          <button
+            v-if="usuario.rol === 'administrador'"
+            class="ecora-mobile-nav__admin"
+            type="button"
+            @click="abrirPanelAdministrador"
+          >
+            Panel administrativo
+          </button>
 
           <button
             class="ecora-mobile-nav__logout"
@@ -185,7 +207,7 @@ defineProps({
           >
             Cerrar sesión
           </button>
-        </div>       
+        </div>  
       </nav>
     </Transition>
   </header>
@@ -581,6 +603,42 @@ defineProps({
   .ecora-actions__user {
     display: none;
   }
+}
+
+.ecora-actions__admin {
+  padding: 8px 12px;
+  border: 1px solid var(--ecora-warm);
+  background: var(--ecora-warm);
+  color: var(--ecora-cream);
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.ecora-actions__admin:hover {
+  background: transparent;
+  color: var(--ecora-warm);
+}
+
+.ecora-mobile-nav__admin {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid var(--ecora-warm);
+  background: var(--ecora-warm);
+  color: var(--ecora-cream);
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 </style>

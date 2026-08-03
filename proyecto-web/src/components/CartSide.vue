@@ -11,11 +11,20 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-    usuario: { type: Object, default: null }
+  usuario: {
+    type: Object,
+    default: null
+  }
 })
+
 watch(() => props.usuario, (val) => {
 }, { immediate: true })
-const emit = defineEmits(['close', 'remove-item', 'cart-paid'])
+
+const emit = defineEmits([
+  'close',
+  'remove-item',
+  'cart-paid'
+])
 
 const confirmandoIndex = ref(null)
 const checkoutOpen = ref(false)
@@ -43,16 +52,51 @@ const cancelarEliminar = () => {
 
 const formatearPrecio = (precio) => {
   const numero = parseInt(`${precio}`.replace(/\D/g, ''))
+
   return `CRC ${numero.toLocaleString('es-CR')}`
 }
 
 const precioUnitario = (precio) => {
   return parseInt(`${precio}`.replace(/\D/g, ''))
 }
+
+const completarCompra = () => {
+  if (!props.usuario || props.items.length === 0) {
+    return
+  }
+
+  const nuevaOrden = {
+    cliente: {
+      id: props.usuario.id,
+      nombre: props.usuario.nombre,
+      correo: props.usuario.correo
+    },
+
+    productos: props.items.map((item) => ({
+      id: item.id,
+      nombre: item.nombre,
+      talla: item.talla,
+      cantidad: Number(item.cantidad),
+      precio: precioUnitario(item.precio),
+      imagen: item.imagen
+    })),
+
+    total: Number(props.total),
+    fecha: new Date().toISOString(),
+    estado: 'Pendiente'
+  }
+
+  checkoutOpen.value = false
+  emit('cart-paid', nuevaOrden)
+}
 </script>
+
 <template>
   <!-- Overlay -->
-  <div class="cart-overlay" @click="emit('close')"></div>
+  <div
+    class="cart-overlay"
+    @click="emit('close')"
+  ></div>
 
   <!-- Panel lateral -->
   <aside class="cart-side">
@@ -60,14 +104,42 @@ const precioUnitario = (precio) => {
     <!-- Header -->
     <div class="cart-header">
       <div class="cart-header__title">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <path d="M16 10a4 4 0 01-8 0" />
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path
+            d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"
+          />
+
+          <line
+            x1="3"
+            y1="6"
+            x2="21"
+            y2="6"
+          />
+
+          <path
+            d="M16 10a4 4 0 01-8 0"
+          />
         </svg>
-        <span>Tu bolsa ({{ items.length }})</span>
+
+        <span>
+          Tu bolsa ({{ items.length }})
+        </span>
       </div>
-      <button class="cart-header__close" @click="emit('close')" aria-label="Cerrar carrito">✕</button>
+
+      <button
+        class="cart-header__close"
+        aria-label="Cerrar carrito"
+        @click="emit('close')"
+      >
+        ✕
+      </button>
     </div>
 
     <div class="cart-divider"></div>
@@ -76,78 +148,165 @@ const precioUnitario = (precio) => {
     <div class="cart-body">
 
       <!-- Vacío -->
-      <div v-if="items.length === 0" class="cart-empty">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#AEA897" stroke-width="1">
-          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <path d="M16 10a4 4 0 01-8 0" />
+      <div
+        v-if="items.length === 0"
+        class="cart-empty"
+      >
+        <svg
+          width="48"
+          height="48"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#AEA897"
+          stroke-width="1"
+        >
+          <path
+            d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"
+          />
+
+          <line
+            x1="3"
+            y1="6"
+            x2="21"
+            y2="6"
+          />
+
+          <path
+            d="M16 10a4 4 0 01-8 0"
+          />
         </svg>
-        <p class="cart-empty__text">Tu bolsa está vacía.</p>
-        <p class="cart-empty__sub">Explora la colección.</p>
+
+        <p class="cart-empty__text">
+          Tu bolsa está vacía.
+        </p>
+
+        <p class="cart-empty__sub">
+          Explora la colección.
+        </p>
       </div>
 
       <!-- Items -->
       <template v-else>
-        <article v-for="(item, index) in items" :key="`${item.id}-${item.talla}-${index}`" class="cart-item">
+        <article
+          v-for="(item, index) in items"
+          :key="`${item.id}-${item.talla}-${index}`"
+          class="cart-item"
+        >
           <!-- Imagen -->
-          <img :src="item.imagen" :alt="item.nombre" class="cart-item__img">
+          <img
+            :src="item.imagen"
+            :alt="item.nombre"
+            class="cart-item__img"
+          >
 
           <!-- Info -->
           <div class="cart-item__info">
-            <h4 class="cart-item__nombre">{{ item.nombre }}</h4>
-            <p class="cart-item__meta">Talla: {{ item.talla }}</p>
-            <p class="cart-item__meta">Cantidad: {{ item.cantidad }}</p>
+            <h4 class="cart-item__nombre">
+              {{ item.nombre }}
+            </h4>
+
+            <p class="cart-item__meta">
+              Talla: {{ item.talla }}
+            </p>
+
+            <p class="cart-item__meta">
+              Cantidad: {{ item.cantidad }}
+            </p>
+
             <p class="cart-item__precio-unit">
               {{ formatearPrecio(item.precio) }} c/u
             </p>
+
             <p class="cart-item__precio-total">
-              {{ formatearPrecio(precioUnitario(item.precio) * item.cantidad) }}
+              {{
+                formatearPrecio(
+                  precioUnitario(item.precio) *
+                  item.cantidad
+                )
+              }}
             </p>
           </div>
 
           <!-- Botón eliminar -->
-          <button v-if="confirmandoIndex !== index" class="cart-item__remove" @click="pedirConfirmacion(index)"
-            aria-label="Eliminar producto">
+          <button
+            v-if="confirmandoIndex !== index"
+            class="cart-item__remove"
+            aria-label="Eliminar producto"
+            @click="pedirConfirmacion(index)"
+          >
             ✕
           </button>
 
           <!-- Confirmación -->
-          <div v-else class="cart-item__confirm">
+          <div
+            v-else
+            class="cart-item__confirm"
+          >
             <p>¿Eliminar?</p>
+
             <div class="cart-item__confirm-btns">
-              <button class="btn-si" @click="confirmarEliminar(index)">Sí</button>
-              <button class="btn-no" @click="cancelarEliminar">No</button>
+              <button
+                class="btn-si"
+                @click="confirmarEliminar(index)"
+              >
+                Sí
+              </button>
+
+              <button
+                class="btn-no"
+                @click="cancelarEliminar"
+              >
+                No
+              </button>
             </div>
           </div>
-
         </article>
       </template>
     </div>
 
     <!-- Footer con total y botón pagar -->
-    <div v-if="items.length > 0" class="cart-footer">
+    <div
+      v-if="items.length > 0"
+      class="cart-footer"
+    >
       <div class="cart-footer__total">
-        <span class="cart-footer__total-label">Total a pagar</span>
+        <span class="cart-footer__total-label">
+          Total a pagar
+        </span>
+
         <span class="cart-footer__total-valor">
           CRC {{ total.toLocaleString('es-CR') }}
         </span>
       </div>
 
       <!-- Usuario logueado → botón pagar -->
-      <button v-if="usuario" class="cart-footer__btn" @click="checkoutOpen = true">
+      <button
+        v-if="usuario"
+        class="cart-footer__btn"
+        @click="checkoutOpen = true"
+      >
         Pagar — CRC {{ total.toLocaleString('es-CR') }}
       </button>
 
       <!-- Sin sesión → mensaje -->
-      <div v-else class="cart-login-msg">
-        <p>Debés iniciar sesión para continuar con el pago.</p>
+      <div
+        v-else
+        class="cart-login-msg"
+      >
+        <p>
+          Debés iniciar sesión para continuar con el pago.
+        </p>
       </div>
     </div>
-
   </aside>
 
   <!-- Checkout -->
-  <CartCheckout v-if="checkoutOpen" :total="total" @close="checkoutOpen = false" @paid="emit('cart-paid')" />
+  <CartCheckout
+    v-if="checkoutOpen"
+    :total="total"
+    @close="checkoutOpen = false"
+    @paid="completarCompra"
+  />
 </template>
 
 <style scoped>
@@ -400,6 +559,7 @@ const precioUnitario = (precio) => {
   text-align: right;
   min-width: 0;
 }
+
 .cart-footer__total-label {
   font-family: 'Jost', sans-serif;
   font-size: 12px;
