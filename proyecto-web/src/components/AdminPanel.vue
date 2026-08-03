@@ -549,7 +549,7 @@ const cerrarPanel = () => {
                 type="text"
                 class="form-control"
                 :class="{ 'is-invalid': errores.imagen }"
-                placeholder="/images/producto.jpg"
+                placeholder="/productos/producto.jpg"
               />
 
               <div class="invalid-feedback">
