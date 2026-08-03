@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import ProductDetalle from './ProductDetalle.vue'
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'add-to-cart'])
 
 const props = defineProps({
   catalogo: {
@@ -29,6 +29,11 @@ const parsearPrecio = (producto) => {
   const valor = `${producto?.precio || ''}`
   const soloNumeros = valor.replace(/[^\d]/g, '')
   return Number(soloNumeros || 0)
+}
+
+const agregarAlCarrito = (item) => {
+  emit('add-to-cart', item)
+  cerrarDetalle()
 }
 
 const generosDisponibles = computed(() => {
@@ -143,7 +148,8 @@ const productosFiltrados = computed(() => {
     </div>
   </div>
 
-  <ProductDetalle v-if="productoSeleccionado" :product="productoSeleccionado" @close="cerrarDetalle" />
+  <ProductDetalle v-if="productoSeleccionado" :product="productoSeleccionado" @close="cerrarDetalle" @add-to-cart="agregarAlCarrito"/>
+  
 </template>
 
 <style scoped>
@@ -174,9 +180,9 @@ const productosFiltrados = computed(() => {
 }
 
 .modal-close {
-  position: absolute;
+  position: sticky;
   top: 1rem;
-  right: 1rem;
+  left: calc(100% - 3rem);
   width: 2.5rem;
   height: 2.5rem;
   border: none;

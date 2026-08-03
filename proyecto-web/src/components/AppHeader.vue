@@ -2,9 +2,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const emit = defineEmits([
+  'toggle-sidebar',
   'open-register',
   'open-login',
-  'logout'
+  'open-admin',
+  'logout',
+  'open-cart'
 ])
 
 const menuOpen = ref(false)
@@ -46,8 +49,16 @@ defineProps({
   usuario: {
     type: Object,
     default: null
-  }
+  },
+  cartCount: {
+    type: Number,
+    default: 0 }
 })
+
+const abrirPanelAdministrador = () => {
+  closeMenu()
+  emit('open-admin')
+}
 
 </script>
 
@@ -96,32 +107,39 @@ defineProps({
           </button>
         </div>
 
-        <div
-          v-else
-          class="ecora-actions__user"
-        >
-          <span class="ecora-actions__user-name">
-            Hola, {{ usuario.nombre }}
-          </span>
+        <div v-else class="ecora-actions__user">
+        <span class="ecora-actions__user-name">
+          Hola, {{ usuario.nombre }}
+        </span>
 
-          <button
-            class="ecora-actions__logout"
-            type="button"
-            @click="cerrarSesion"
-          >
-            Cerrar sesión
+        <button
+          v-if="usuario.rol === 'administrador'"
+          class="ecora-actions__admin"
+          type="button"
+          @click="abrirPanelAdministrador"
+        >
+          Panel administrativo
+        </button>
+
+        <button
+          class="ecora-actions__logout"
+          type="button"
+          @click="cerrarSesion"
+        >
+          Cerrar sesión
+        </button>
+      </div>
+
+        <div>
+          <button class="ecora-actions__cart" @click="emit('open-cart')" aria-label="Carrito">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 01-8 0" />
+          </svg>
+            <span class="ecora-actions__cart-count">{{ cartCount }}</span>
           </button>
         </div>
-        
-        
-        <button class="ecora-actions__cart" aria-label="Carrito de compras">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 01-8 0"/>
-          </svg>
-          <span class="ecora-actions__cart-count">0</span>
-        </button>
 
         <!-- HAMBURGUESA MOBILE -->
         <button
@@ -168,10 +186,19 @@ defineProps({
           </button>
         </div>
         
-        <div v-else class="ecora-mobile-nav__user">
+         <div v-else class="ecora-mobile-nav__user">
           <p>
             Hola, {{ usuario.nombre }}
           </p>
+
+          <button
+            v-if="usuario.rol === 'administrador'"
+            class="ecora-mobile-nav__admin"
+            type="button"
+            @click="abrirPanelAdministrador"
+          >
+            Panel administrativo
+          </button>
 
           <button
             class="ecora-mobile-nav__logout"
@@ -180,7 +207,7 @@ defineProps({
           >
             Cerrar sesión
           </button>
-        </div>       
+        </div>  
       </nav>
     </Transition>
   </header>
@@ -436,30 +463,6 @@ defineProps({
   transform: translateY(-8px);
 }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .ecora-nav {
-    display: none;
-  }
-
-  .ecora-actions__register {
-  display: none;
-  }
-
-  .ecora-hamburger {
-    display: flex;
-  }
-
-  .ecora-header__inner {
-    padding: 0 1.25rem;
-  }
-
-  .ecora-actions__auth,
-  .ecora-actions__user {
-    display: none;
-  }
-}
-
 .ecora-actions__auth {
   display: flex;
   align-items: center;
@@ -578,4 +581,64 @@ defineProps({
   background: var(--ecora-black);
   color: var(--ecora-cream);
 }
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .ecora-nav {
+    display: none;
+  }
+
+  .ecora-actions__register {
+  display: none;
+  }
+
+  .ecora-hamburger {
+    display: flex;
+  }
+
+  .ecora-header__inner {
+    padding: 0 1.25rem;
+  }
+
+  .ecora-actions__auth,
+  .ecora-actions__user {
+    display: none;
+  }
+}
+
+.ecora-actions__admin {
+  padding: 8px 12px;
+  border: 1px solid var(--ecora-warm);
+  background: var(--ecora-warm);
+  color: var(--ecora-cream);
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.ecora-actions__admin:hover {
+  background: transparent;
+  color: var(--ecora-warm);
+}
+
+.ecora-mobile-nav__admin {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid var(--ecora-warm);
+  background: var(--ecora-warm);
+  color: var(--ecora-cream);
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
 </style>
