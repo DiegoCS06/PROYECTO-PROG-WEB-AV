@@ -14,10 +14,12 @@ import RegisterModal from './components/RegisterModal.vue'
 import LoginModal from './components/LoginModal.vue'
 import CartSide from './components/CartSide.vue'
 import AdminPanel from './components/AdminPanel.vue'
+import UserOrdersModal from './components/UserOrdersModal.vue'
 
 const data = ref([])
 const error = ref('')
 const isAdminPanelOpen = ref(false)
+const isUserOrdersOpen = ref(false)
 const productos = ref([])
 const ordenes = ref([])
 
@@ -119,6 +121,7 @@ const cerrarSesion = () => {
   localStorage.removeItem('ecoraSesion')
   usuarioSesion.value = null
   isAdminPanelOpen.value = false
+  isUserOrdersOpen.value = false
 }
 
 // ── Estado del carrito ──
@@ -335,6 +338,24 @@ const actualizarEstadoOrden = ({ id, estado }) => {
 
   guardarOrdenes()
 }
+
+const ordenesUsuario = computed(() => {
+  if (!usuarioSesion.value) {
+    return []
+  }
+
+  return ordenes.value.filter((orden) => {
+    const mismoId =
+      Number(orden.cliente?.id) ===
+      Number(usuarioSesion.value.id)
+
+    const mismoCorreo =
+      orden.cliente?.correo?.toLowerCase() ===
+      usuarioSesion.value.correo?.toLowerCase()
+
+    return mismoId || mismoCorreo
+  })
+})
 </script>
 
 <template>
@@ -344,6 +365,7 @@ const actualizarEstadoOrden = ({ id, estado }) => {
     @open-register="isRegisterOpen = true"
     @open-login="isLoginOpen = true"
     @open-admin="abrirPanelAdministrador"
+    @open-orders="isUserOrdersOpen = true"
     @logout="cerrarSesion"
     @open-cart="cartOpen = true"
   />
@@ -396,6 +418,12 @@ const actualizarEstadoOrden = ({ id, estado }) => {
     v-if="isLoginOpen"
     @close="isLoginOpen = false"
     @login-success="manejarInicioSesion"
+  />
+
+  <UserOrdersModal
+    v-if="isUserOrdersOpen && usuarioSesion"
+    :ordenes="ordenesUsuario"
+    @close="isUserOrdersOpen = false"
   />
 
   <AdminPanel
