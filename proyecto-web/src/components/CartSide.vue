@@ -302,10 +302,12 @@ const completarCompra = () => {
 
   <!-- Checkout -->
   <CartCheckout
-    v-if="checkoutOpen"
-    :total="total"
-    @close="checkoutOpen = false"
-    @paid="completarCompra"
+  v-if="checkoutOpen"
+  :total="total"
+  :items="items"
+  :usuario="usuario"
+  @close="checkoutOpen = false"
+  @paid="(orden) => emit('cart-paid', orden)"
   />
 </template>
 

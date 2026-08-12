@@ -1,11 +1,18 @@
 <script setup>
 import { ref, computed } from 'vue'
+import InvoiceView from './InvoiceView.vue'
 
 const props = defineProps({
   total: {
     type: Number,
     required: true,
   },
+  items: {
+    type: Array,
+    default: () => [] },
+  usuario: {
+    type: Object,
+    default: () => ({}) }
 })
 
 const emit = defineEmits(['close', 'paid'])
@@ -16,6 +23,8 @@ const cvv = ref('')
 const errores = ref({})
 const procesando = ref(false)
 const estadoPago = ref('') // 'procesando' | 'exito' | 'error'
+const mostrarFactura = ref(false)
+const ordenId = ref('')
 
 // Detectar tipo de tarjeta
 const tipoTarjeta = computed(() => {
@@ -97,21 +106,50 @@ const validar = () => {
   return Object.keys(err).length === 0
 }
 
+const itemsFactura = ref([])
+const fechaOrden = ref(null)
+const ordenParaRegistrar = ref(null)
+
 const pagar = async () => {
   if (!validar()) return
 
   estadoPago.value = 'procesando'
-
-  // Simulación de procesamiento
   await new Promise(resolve => setTimeout(resolve, 2000))
 
-  // Simulamos éxito (90% de probabilidad)
   const exito = Math.random() > 0.1
   estadoPago.value = exito ? 'exito' : 'error'
 
   if (exito) {
-    setTimeout(() => emit('paid'), 2500)
+    ordenId.value = Date.now()
+    itemsFactura.value = [...props.items]
+
+    ordenParaRegistrar.value = {
+      id: ordenId.value,
+      fecha: new Date().toISOString(),
+      productos: [...props.items],
+      total: props.total,
+      cliente: {
+        id: props.usuario?.id,
+        nombre: props.usuario?.nombre,
+        correo: props.usuario?.correo
+      },
+      estado: 'Pendiente'
+    }
+
+    setTimeout(() => {
+      mostrarFactura.value = true
+    }, 2500)
   }
+}
+
+const finalizarCompra = () => {
+  emit('paid', {
+    id: ordenId.value,
+    fecha: fechaOrden.value.toISOString(),
+    estado: 'Confirmada',
+    productos: itemsFactura.value,
+    total: props.total
+  })
 }
 </script>
 
@@ -133,7 +171,6 @@ const pagar = async () => {
         <p class="checkout-estado__texto">¡Pago realizado con éxito!</p>
         <p class="checkout-estado__sub">Gracias por tu compra en Ecora.</p>
       </div>
-
       <!-- Estado: error -->
       <div v-else-if="estadoPago === 'error'" class="checkout-estado">
         <span class="checkout-estado__icono checkout-estado__icono--error">✕</span>
@@ -141,6 +178,15 @@ const pagar = async () => {
         <p class="checkout-estado__sub">Verificá los datos e intentá nuevamente.</p>
         <button class="checkout-retry" @click="estadoPago = ''">Intentar de nuevo</button>
       </div>
+      <InvoiceView
+        v-if="mostrarFactura"
+        :usuario="props.usuario"
+        :items="itemsFactura"
+        :numero-orden="ordenId"
+        :fecha="new Date()" :total="props.total" @close="() => {
+          mostrarFactura = false
+          emit('paid', ordenParaRegistrar)
+        }" />
 
       <!-- Formulario -->
       <template v-else>
@@ -414,4 +460,5 @@ const pagar = async () => {
   text-transform: uppercase;
   cursor: pointer;
 }
+
 </style>
