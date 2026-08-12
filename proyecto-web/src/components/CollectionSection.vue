@@ -21,17 +21,21 @@ const LIMITE = 6
 // Tipos únicos para los filtros
 const tiposDisponibles = computed(() => {
   const tipos = (props.catalogo || [])
-    .map(p => p?.categoria?.[1])
+    .map(p => categoriaArray(p?.categoria)[1])
     .filter(Boolean)
     .map(v => v.trim())
   return ['Todos', ...new Set(tipos)]
 })
 
-// Productos filtrados por tipo
+const categoriaArray = (categoria) => {
+  if (Array.isArray(categoria)) return categoria
+  if (typeof categoria === 'string') return [categoria]
+  return []
+}
 const productosFiltrados = computed(() => {
   if (filtroTipo.value === 'Todos') return props.catalogo
   return props.catalogo.filter(
-    p => p?.categoria?.[1]?.toLowerCase() === filtroTipo.value.toLowerCase()
+    p => categoriaArray(p?.categoria)[1]?.toLowerCase() === filtroTipo.value.toLowerCase()
   )
 })
 
@@ -121,7 +125,7 @@ const agregarAlCarrito = (item) => {
 
           <div class="coleccion__card-body">
             <p class="coleccion__card-eyebrow">
-              {{ producto.categoria?.join(' · ') }}
+              {{ categoriaArray(producto.categoria).join(' · ') }}
             </p>
             <h3 class="coleccion__card-nombre">{{ producto.nombre }}</h3>
             <p class="coleccion__card-precio">{{ producto.precio }}</p>

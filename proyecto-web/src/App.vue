@@ -303,6 +303,8 @@ const guardarOrdenes = () => {
 }
 
 const registrarOrden = (nuevaOrden) => {
+  if (!nuevaOrden) return
+
   const idsValidos = ordenes.value
     .map((orden) => Number(orden.id))
     .filter((id) => Number.isFinite(id))
@@ -313,7 +315,7 @@ const registrarOrden = (nuevaOrden) => {
 
   ordenes.value.push({
     ...nuevaOrden,
-    id: nuevoId,
+    id: nuevaOrden.id ?? nuevoId,
     estado: nuevaOrden.estado || 'Pendiente'
   })
 

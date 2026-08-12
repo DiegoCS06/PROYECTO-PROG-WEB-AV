@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ProductDetalle from './ProductDetalle.vue'
 
 const emit = defineEmits(['close', 'add-to-cart'])
@@ -9,6 +9,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  filtroInicial: {
+    type: String,
+    default: 'Todos'
+  }
 })
 
 const productoSeleccionado = ref(null)
@@ -16,6 +20,10 @@ const busqueda = ref('')
 const filtroGenero = ref('Todos')
 const filtroTipo = ref('Todos')
 const ordenPrecio = ref('default')
+
+watch(() => props.filtroInicial, (nuevo) => {
+  if (nuevo) filtroTipo.value = nuevo
+})
 
 const abrirDetalle = (producto) => {
   productoSeleccionado.value = producto
