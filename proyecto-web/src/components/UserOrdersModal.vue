@@ -124,13 +124,12 @@ const claseEstado = (estado) => {
                   Cantidad: {{ producto.cantidad }}
                 </span>
               </div>
-
               <p>
                 {{
                   formatoPrecio(
-                    Number(producto.precio) *
+                    Number(`${producto.precio}`.replace(/\D/g, '')) *
                     Number(producto.cantidad)
-                  )
+                )
                 }}
               </p>
             </div>
