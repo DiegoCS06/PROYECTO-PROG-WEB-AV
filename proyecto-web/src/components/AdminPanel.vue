@@ -736,7 +736,7 @@ const cerrarPanel = () => {
             <div class="admin-order__header">
               <div>
                 <p class="admin-order__label">
-                  ORDEN #{{ orden.id }}
+                  ORDEN #{{ orden.numeroOrden || orden.id }}
                 </p>
 
                 <h2>
@@ -780,8 +780,8 @@ const cerrarPanel = () => {
                 <p>
                   {{
                     formatoPrecio(
-                      Number(producto.precio) *
-                      Number(producto.cantidad)
+                      (Number(`${producto.precio}`.replace(/\D/g, '')) || 0) *
+                      Number(producto.cantidad || 1)
                     )
                   }}
                 </p>

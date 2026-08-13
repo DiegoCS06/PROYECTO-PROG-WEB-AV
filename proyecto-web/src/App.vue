@@ -24,46 +24,27 @@ const productos = ref([])
 const ordenes = ref([])
 
 onMounted(async () => {
-  crearAdministradorInicial()
 
   try {
-    const response = await fetch('/data/Catalogo.json')
+  const response = await fetch('/api/productos')
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`)
+  }
 
-    data.value = await response.json()
+  const productosAPI = await response.json()
 
-    const productosGuardados =
-      localStorage.getItem('ecoraProductos')
+  productos.value = productosAPI.map((producto) => ({
+    ...producto,
+    id: producto._id,
 
-    if (productosGuardados) {
-      try {
-        productos.value = JSON.parse(productosGuardados)
-      } catch (errorProductos) {
-        console.error(
-          'No fue posible recuperar los productos guardados:',
-          errorProductos
-        )
+    categoria: producto.categorias.map(
+      (categoria) => `${categoria.genero} - ${categoria.tipo}`
+    ),
 
-        localStorage.removeItem('ecoraProductos')
+    inventario: producto.inventario ?? 10
+  }))
 
-        productos.value = data.value.catalogo.map((producto) => ({
-          ...producto,
-          inventario: producto.inventario ?? 10
-        }))
-
-        guardarProductos()
-      }
-    } else {
-      productos.value = data.value.catalogo.map((producto) => ({
-        ...producto,
-        inventario: producto.inventario ?? 10
-      }))
-
-      guardarProductos()
-    }
   } catch (err) {
     error.value = 'No Products found! :('
     console.error(err)
@@ -82,22 +63,6 @@ onMounted(async () => {
 
       localStorage.removeItem('ecoraSesion')
       usuarioSesion.value = null
-    }
-  }
-
-  const ordenesGuardadas = localStorage.getItem('ecoraOrdenes')
-
-  if (ordenesGuardadas) {
-    try {
-      ordenes.value = JSON.parse(ordenesGuardadas)
-    } catch (errorOrdenes) {
-      console.error(
-        'No fue posible recuperar las órdenes:',
-        errorOrdenes
-      )
-
-      localStorage.removeItem('ecoraOrdenes')
-      ordenes.value = []
     }
   }
 })
@@ -119,6 +84,8 @@ const manejarInicioSesion = (usuario) => {
 
 const cerrarSesion = () => {
   localStorage.removeItem('ecoraSesion')
+  localStorage.removeItem('ecoraToken')
+  
   usuarioSesion.value = null
   isAdminPanelOpen.value = false
   isUserOrdersOpen.value = false
@@ -187,177 +154,326 @@ const aplicarFiltro = async (tipo) => {
     ?.scrollIntoView({ behavior: 'smooth' })
 }
 
-const crearAdministradorInicial = () => {
-  let usuariosGuardados = []
-
-  try {
-    usuariosGuardados =
-      JSON.parse(localStorage.getItem('ecoraUsuarios')) || []
-  } catch (errorUsuarios) {
-    console.error(
-      'No fue posible recuperar los usuarios:',
-      errorUsuarios
-    )
-
-    localStorage.removeItem('ecoraUsuarios')
-  }
-
-  const correoAdministrador = 'admin@ecora.com'
-
-  const indiceAdministrador = usuariosGuardados.findIndex(
-    (usuario) =>
-      usuario.correo?.toLowerCase() === correoAdministrador
-  )
-
-  if (indiceAdministrador !== -1) {
-    usuariosGuardados[indiceAdministrador] = {
-      ...usuariosGuardados[indiceAdministrador],
-      nombre: 'Administrador Ecora',
-      correo: correoAdministrador,
-      contrasenna: 'Admin123',
-      rol: 'administrador'
-    }
-  } else {
-    const administrador = {
-      id: Date.now(),
-      nombre: 'Administrador Ecora',
-      correo: correoAdministrador,
-      contrasenna: 'Admin123',
-      rol: 'administrador'
-    }
-
-    usuariosGuardados.push(administrador)
-  }
-
-  localStorage.setItem(
-    'ecoraUsuarios',
-    JSON.stringify(usuariosGuardados)
-  )
-}
-
-const abrirPanelAdministrador = () => {
+const abrirPanelAdministrador = async () => {
   if (usuarioSesion.value?.rol !== 'administrador') {
     return
   }
 
-  isAdminPanelOpen.value = true
-}
+  try {
+    const token = localStorage.getItem('ecoraToken')
 
-const guardarProductos = () => {
-  localStorage.setItem(
-    'ecoraProductos',
-    JSON.stringify(productos.value)
-  )
-}
+    if (!token) {
+      throw new Error('No hay una sesión válida.')
+    }
 
-const registrarProducto = (nuevoProducto) => {
-  const idsValidos = productos.value
-    .map((producto) => Number(producto.id))
-    .filter((id) => Number.isFinite(id))
+    const response = await fetch('/api/ordenes', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
 
-  const nuevoId = idsValidos.length
-    ? Math.max(...idsValidos) + 1
-    : 1
+    const resultado = await response.json()
 
-  productos.value.push({
-    ...nuevoProducto,
-    id: nuevoId
-  })
+    if (!response.ok) {
+      throw new Error(
+        resultado.msj ||
+        resultado.msg ||
+        'No fue posible obtener las órdenes.'
+      )
+    }
 
-  guardarProductos()
-}
+    ordenes.value = resultado.map((orden) => ({
+      ...orden,
 
-const editarProducto = (productoEditado) => {
-  const indice = productos.value.findIndex(
-    (producto) =>
-      Number(producto.id) === Number(productoEditado.id)
-  )
+      // Usamos el _id de Mongo para poder actualizar la orden
+      id: orden._id,
 
-  if (indice === -1) {
-    return
+      // Conservamos el número original para mostrarlo
+      numeroOrden: orden.id,
+
+      cliente: {
+        id: orden.clienteAsociado?.[0]?.cliente?._id,
+        nombre:
+          orden.clienteAsociado?.[0]?.cliente?.nombre ||
+          'Cliente',
+        correo:
+          orden.clienteAsociado?.[0]?.cliente?.correo ||
+          ''
+      },
+
+      productos: orden.productosOrden.map((item) => ({
+        ...item.productos,
+        id: item.productos?._id,
+        talla: item.talla || 'No aplica',
+        cantidad: item.cantidad || 1
+      }))
+    }))
+
+    console.log('ÓRDENES ADMIN:', ordenes.value)
+
+    isAdminPanelOpen.value = true
+
+  } catch (error) {
+    console.error('Error al cargar órdenes del administrador:', error)
   }
-
-  productos.value[indice] = {
-    ...productos.value[indice],
-    ...productoEditado
-  }
-
-  guardarProductos()
 }
 
-const eliminarProducto = (productoId) => {
-  productos.value = productos.value.filter(
-    (producto) =>
-      Number(producto.id) !== Number(productoId)
-  )
+const registrarProducto = async (nuevoProducto) => {
+  try {
+    const token = localStorage.getItem('ecoraToken')
 
-  guardarProductos()
+    if (!token) {
+      throw new Error('No hay una sesión válida.')
+    }
+
+    const categorias = nuevoProducto.categoria.map((categoria) => {
+      const partes = categoria.split('-').map((parte) => parte.trim())
+
+      return {
+        genero: partes[0],
+        tipo: partes[1]
+      }
+    })
+
+    const response = await fetch('/api/productos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        nombre: nuevoProducto.nombre,
+        categorias: categorias,
+        tallas: nuevoProducto.tallas,
+        descripcion: nuevoProducto.descripcion,
+        precio: `CRC ${Number(nuevoProducto.precio).toLocaleString('es-CR')}`,
+        imagen: nuevoProducto.imagen
+      })
+    })
+
+    const resultado = await response.json()
+
+    if (!response.ok) {
+      throw new Error(
+        resultado.msj || 'No fue posible registrar el producto.'
+      )
+    }
+
+    console.log('PRODUCTO REGISTRADO:', resultado)
+
+    const productoGuardado = resultado.producto
+
+    productos.value.push({
+      ...productoGuardado,
+      id: productoGuardado._id,
+      categoria: categorias.map(
+        (categoria) => `${categoria.genero} - ${categoria.tipo}`),
+      inventario: nuevoProducto.inventario
+    })
+
+  } catch (error) {
+    console.error('Error al registrar producto:', error)
+  }
+}
+
+const editarProducto = async (productoEditado) => {
+  try {
+    const token = localStorage.getItem('ecoraToken')
+
+    if (!token) {
+      throw new Error('No hay una sesión válida.')
+    }
+
+    const categorias = productoEditado.categoria.map((categoria) => {
+      const partes = categoria.split('-').map((parte) => parte.trim())
+
+      return {
+        genero: partes[0],
+        tipo: partes[1]
+      }
+    })
+
+    const response = await fetch(`/api/productos/${productoEditado.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        nombre: productoEditado.nombre,
+        categorias: categorias,
+        tallas: productoEditado.tallas,
+        descripcion: productoEditado.descripcion,
+        precio: `CRC ${Number(productoEditado.precio).toLocaleString('es-CR')}`,
+        imagen: productoEditado.imagen
+      })
+    })
+
+    const resultado = await response.json()
+
+    if (!response.ok) {
+      throw new Error(
+        resultado.msj || 'No fue posible actualizar el producto.'
+      )
+    }
+
+    console.log('PRODUCTO ACTUALIZADO:', resultado)
+
+    const productoActualizado = resultado.producto
+
+    const indice = productos.value.findIndex(
+      (producto) => producto.id === productoEditado.id
+    )
+
+    if (indice !== -1) {
+      productos.value[indice] = {
+        ...productoActualizado,
+        id: productoActualizado._id,
+        categoria: productoActualizado.categorias.map(
+          (categoria) => `${categoria.genero} - ${categoria.tipo}`),
+        inventario: productoEditado.inventario
+      }
+    }
+
+  } catch (error) {
+    console.error('Error al editar producto:', error)
+  }
+}
+
+const eliminarProducto = async (productoId) => {
+  try {
+    const token = localStorage.getItem('ecoraToken')
+
+    if (!token) {
+      throw new Error('No hay una sesión válida.')
+    }
+
+    const response = await fetch(`/api/productos/${productoId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    const resultado = await response.json()
+
+    if (!response.ok) {
+      throw new Error(
+        resultado.msj || 'No fue posible eliminar el producto.'
+      )
+    }
+
+    console.log('PRODUCTO ELIMINADO:', resultado)
+
+    productos.value = productos.value.filter(
+      (producto) => producto.id !== productoId
+    )
+
+  } catch (error) {
+    console.error('Error al eliminar producto:', error)
+  }
 }
 
 // ── Estado de órdenes ──
-const guardarOrdenes = () => {
-  localStorage.setItem(
-    'ecoraOrdenes',
-    JSON.stringify(ordenes.value)
-  )
-}
 
-const registrarOrden = (nuevaOrden) => {
-  if (!nuevaOrden) return
-
-  const idsValidos = ordenes.value
-    .map((orden) => Number(orden.id))
-    .filter((id) => Number.isFinite(id))
-
-  const nuevoId = idsValidos.length
-    ? Math.max(...idsValidos) + 1
-    : 1
-
-  ordenes.value.push({
-    ...nuevaOrden,
-    id: nuevaOrden.id ?? nuevoId,
-    estado: nuevaOrden.estado || 'Pendiente'
-  })
-
-  guardarOrdenes()
+const registrarOrden = () => {
   clearCart()
   cartOpen.value = false
 }
 
-const actualizarEstadoOrden = ({ id, estado }) => {
-  const indice = ordenes.value.findIndex(
-    (orden) => Number(orden.id) === Number(id)
-  )
+const actualizarEstadoOrden = async ({ id, estado }) => {
+  try {
+    const token = localStorage.getItem('ecoraToken')
 
-  if (indice === -1) {
-    return
+    if (!token) {
+      throw new Error('No hay una sesión válida.')
+    }
+
+    const response = await fetch(`/api/ordenes/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        estado
+      })
+    })
+
+    const resultado = await response.json()
+
+    if (!response.ok) {
+      throw new Error(
+        resultado.msj ||
+        'No fue posible actualizar el estado de la orden.'
+      )
+    }
+
+    console.log('ESTADO DE ORDEN ACTUALIZADO:', resultado)
+
+    const indice = ordenes.value.findIndex(
+      (orden) => orden.id === id
+    )
+
+    if (indice !== -1) {
+      ordenes.value[indice] = {
+        ...ordenes.value[indice],
+        estado: resultado.orden.estado
+      }
+    }
+
+  } catch (error) {
+    console.error('Error al actualizar estado de orden:', error)
   }
-
-  ordenes.value[indice] = {
-    ...ordenes.value[indice],
-    estado
-  }
-
-  guardarOrdenes()
 }
 
-const ordenesUsuario = computed(() => {
-  if (!usuarioSesion.value) {
-    return []
+const cargarMisOrdenes = async () => {
+  try {
+    const token = localStorage.getItem('ecoraToken')
+
+    if (!token) {
+      console.error('No hay token de sesión.')
+      return
+    }
+
+    const response = await fetch('/api/ordenes/mis-compras', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    const resultado = await response.json()
+
+    if (!response.ok) {
+      throw new Error(
+        resultado.msj ||
+        resultado.msg ||
+        'No fue posible consultar las compras.'
+      )
+    }
+
+    ordenes.value = resultado.map((orden) => ({
+      ...orden,
+
+      productos: orden.productosOrden.map((item) => ({
+        ...item.productos,
+        id: item.productos._id,
+
+        // La orden actual no guarda talla/cantidad en MongoDB,
+        // asi que dejo valores compatibles con el modal.
+        talla: item.talla || 'No aplica',
+        cantidad: item.cantidad || 1
+      }))
+    }))
+
+    isUserOrdersOpen.value = true
+
+  } catch (error) {
+    console.error('Error al cargar las órdenes:', error)
   }
-
-  return ordenes.value.filter((orden) => {
-    const mismoId =
-      Number(orden.cliente?.id) ===
-      Number(usuarioSesion.value.id)
-
-    const mismoCorreo =
-      orden.cliente?.correo?.toLowerCase() ===
-      usuarioSesion.value.correo?.toLowerCase()
-
-    return mismoId || mismoCorreo
-  })
-})
+}
 </script>
 
 <template>
@@ -367,7 +483,7 @@ const ordenesUsuario = computed(() => {
     @open-register="isRegisterOpen = true"
     @open-login="isLoginOpen = true"
     @open-admin="abrirPanelAdministrador"
-    @open-orders="isUserOrdersOpen = true"
+    @open-orders="cargarMisOrdenes"
     @logout="cerrarSesion"
     @open-cart="cartOpen = true"
   />
@@ -424,7 +540,7 @@ const ordenesUsuario = computed(() => {
 
   <UserOrdersModal
     v-if="isUserOrdersOpen && usuarioSesion"
-    :ordenes="ordenesUsuario"
+    :ordenes="ordenes"
     @close="isUserOrdersOpen = false"
   />
 

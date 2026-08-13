@@ -87,48 +87,55 @@ const validarFormulario = () => {
   return formularioValido
 }
 
-const registrarUsuario = () => {
+const registrarUsuario = async () => {
   if (!validarFormulario()) {
     return
   }
 
-  const usuariosGuardados =
-    JSON.parse(localStorage.getItem('ecoraUsuarios')) || []
-
   const correoNormalizado = formulario.correo.trim().toLowerCase()
 
-  const usuarioExistente = usuariosGuardados.some(
-    (usuario) => usuario.correo.toLowerCase() === correoNormalizado
-  )
+  try {
+    const response = await fetch('/api/usuarios', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        nombre: formulario.nombre.trim(),
+        correo: correoNormalizado,
+        contrasenna: formulario.contrasenna,
+        tipoUsuario: 'cliente'
+      })
+    })
 
-  if (usuarioExistente) {
-    errores.correo = 'Ya existe una cuenta registrada con este correo.'
-    return
+    const resultado = await response.json()
+
+    if (!response.ok) {
+      if (response.status === 409) {
+        errores.correo =
+          'Ya existe una cuenta registrada con este correo.'
+        return
+      }
+
+      throw new Error(
+        resultado.msj || 'No fue posible registrar el usuario.'
+      )
+    }
+
+    mensajeExito.value = 'La cuenta fue creada correctamente.'
+
+    emit('registered', resultado.usuario || resultado)
+
+    formulario.nombre = ''
+    formulario.correo = ''
+    formulario.contrasenna = ''
+    formulario.confirmarContrasenna = ''
+  } catch (error) {
+    console.error('Error al registrar usuario:', error)
+
+    errores.correo =
+      error.message || 'No fue posible registrar la cuenta.'
   }
-
-  const nuevoUsuario = {
-    id: Date.now(),
-    nombre: formulario.nombre.trim(),
-    correo: correoNormalizado,
-    contrasenna: formulario.contrasenna,
-    rol: 'cliente'
-  }
-
-  usuariosGuardados.push(nuevoUsuario)
-
-  localStorage.setItem(
-    'ecoraUsuarios',
-    JSON.stringify(usuariosGuardados)
-  )
-
-  mensajeExito.value = 'La cuenta fue creada correctamente.'
-
-  emit('registered', nuevoUsuario)
-
-  formulario.nombre = ''
-  formulario.correo = ''
-  formulario.contrasenna = ''
-  formulario.confirmarContrasenna = ''
 }
 
 const cerrarModal = () => {
