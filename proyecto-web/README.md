@@ -5,7 +5,6 @@
 - Correo: `admin@ecora.com`
 - Contraseña: `Admin123`
 
-La cuenta administrativa se crea automáticamente al iniciar la aplicación
 
 ### Cliente
 

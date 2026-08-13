@@ -114,18 +114,56 @@ const pagar = async () => {
   if (!validar()) return
 
   estadoPago.value = 'procesando'
+
   await new Promise(resolve => setTimeout(resolve, 2000))
 
   const exito = Math.random() > 0.1
-  estadoPago.value = exito ? 'exito' : 'error'
 
-  if (exito) {
-    ordenId.value = Date.now()
+  if (!exito) {
+    estadoPago.value = 'error'
+    return
+  }
+
+  try {
+    const token = localStorage.getItem('ecoraToken')
+
+    if (!token) {
+      throw new Error('No hay una sesión válida.')
+    }
+
+    const idsProductos = props.items.map((item) => {
+      return item._id || item.id
+    })
+
+    const response = await fetch('/api/ordenes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        productos: idsProductos,
+        estado: 'Pendiente',
+        total: `CRC ${props.total.toLocaleString('es-CR')}`
+      })
+    })
+
+    const resultado = await response.json()
+
+    if (!response.ok) {
+      throw new Error(
+        resultado.msj || 'No fue posible registrar la orden.'
+      )
+    }
+
+    console.log('ORDEN CREADA:', resultado)
+
+    ordenId.value = resultado.orden.id
     itemsFactura.value = [...props.items]
 
     ordenParaRegistrar.value = {
-      id: ordenId.value,
-      fecha: new Date().toISOString(),
+      id: resultado.orden.id,
+      fecha: resultado.orden.fecha,
       productos: [...props.items],
       total: props.total,
       cliente: {
@@ -133,23 +171,19 @@ const pagar = async () => {
         nombre: props.usuario?.nombre,
         correo: props.usuario?.correo
       },
-      estado: 'Pendiente'
+      estado: resultado.orden.estado
     }
+
+    estadoPago.value = 'exito'
 
     setTimeout(() => {
       mostrarFactura.value = true
     }, 2500)
-  }
-}
 
-const finalizarCompra = () => {
-  emit('paid', {
-    id: ordenId.value,
-    fecha: fechaOrden.value.toISOString(),
-    estado: 'Confirmada',
-    productos: itemsFactura.value,
-    total: props.total
-  })
+  } catch (error) {
+    console.error('Error al crear la orden:', error)
+    estadoPago.value = 'error'
+  }
 }
 </script>
 

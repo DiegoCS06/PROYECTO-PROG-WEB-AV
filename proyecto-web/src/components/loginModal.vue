@@ -48,40 +48,65 @@ const validarFormulario = () => {
   return formularioValido
 }
 
-const iniciarSesion = () => {
+const iniciarSesion = async () => {
   if (!validarFormulario()) {
     return
   }
 
-  const usuariosGuardados =
-    JSON.parse(localStorage.getItem('ecoraUsuarios')) || []
+  limpiarErrores()
 
   const correoNormalizado = formulario.correo.trim().toLowerCase()
 
-  const usuarioEncontrado = usuariosGuardados.find(
-    (usuario) =>
-      usuario.correo.toLowerCase() === correoNormalizado &&
-      usuario.contrasenna === formulario.contrasenna
-  )
+  try {
+    const response = await fetch('/api/usuarios/iniciar-sesion', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        correo: correoNormalizado,
+        contrasenna: formulario.contrasenna
+      })
+    })
 
-  if (!usuarioEncontrado) {
-    errores.general = 'El correo o la contraseña son incorrectos.'
-    return
+    const resultado = await response.json()
+
+    console.log('STATUS:', response.status)
+    console.log('RESPUESTA LOGIN:', resultado)
+
+    if (!response.ok) {
+      errores.general =
+        resultado.msj ||
+        resultado.msg ||
+        'El correo o la contraseña son incorrectos.'
+      return
+    }
+
+    const sesionUsuario = {
+      id: resultado.usuario.id,
+      nombre: resultado.usuario.nombre,
+      correo: resultado.usuario.correo,
+      rol: resultado.usuario.rol
+    }
+
+    localStorage.setItem(
+      'ecoraSesion',
+      JSON.stringify(sesionUsuario)
+    )
+
+    localStorage.setItem(
+      'ecoraToken',
+      resultado.token
+    )
+
+    emit('login-success', sesionUsuario)
+
+  } catch (error) {
+    console.error('Error al iniciar sesión:', error)
+
+    errores.general =
+      'No fue posible conectar con el servidor.'
   }
-
-  const sesionUsuario = {
-    id: usuarioEncontrado.id,
-    nombre: usuarioEncontrado.nombre,
-    correo: usuarioEncontrado.correo,
-    rol: usuarioEncontrado.rol
-  }
-
-  localStorage.setItem(
-    'ecoraSesion',
-    JSON.stringify(sesionUsuario)
-  )
-
-  emit('login-success', sesionUsuario)
 }
 
 const cerrarModal = () => {
