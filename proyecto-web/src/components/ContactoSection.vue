@@ -4,12 +4,13 @@ import { ref } from 'vue'
 const email = ref('')
 const enviado = ref(false)
 const error = ref('')
+const cargando = ref(false)
 
 const validateEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
-const subscribe = () => {
+const subscribe = async () => {
   error.value = ''
 
   if (!email.value.trim()) {
@@ -22,9 +23,38 @@ const subscribe = () => {
     return
   }
 
-  // Simulación de envío
-  enviado.value = true
-  email.value = ''
+  try {
+    cargando.value = true
+
+    const response = await fetch('http://localhost:3000/api/email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email: email.value })
+    })
+
+    const data = await response.json()
+    console.log('Respuesta del servidor:', data)
+
+    if (!response.ok) {
+      error.value = data.message || 'Hubo un error al enviar el correo.'
+      return
+    }
+
+    if (!data.success) {
+      error.value = data.message || 'No se pudo enviar el correo.'
+      return
+    }
+
+    enviado.value = true
+    email.value = ''
+
+  } catch (err) {
+    error.value = 'No se pudo conectar con el servidor. Intentá más tarde.'
+  } finally {
+    cargando.value = false
+  }
 }
 </script>
 
@@ -47,20 +77,12 @@ const subscribe = () => {
       <!-- Formulario -->
       <div v-if="!enviado" class="contact__form">
         <div class="contact__layout">
-          <input
-            v-model="email"
-            type="email"
-            placeholder="tu@correo.com"
-            class="contact__input"
-            :class="{ 'contact__input--error': error }"
-            aria-label="Correo electrónico"
-            @keyup.enter="subscribe"
-          >
-          <button class="contact__btn" @click="subscribe">
-            Suscribir →
+          <input v-model="email" type="email" placeholder="tu@correo.com" class="contact__input"
+            :class="{ 'contact__input--error': error }" aria-label="Correo electrónico" @keyup.enter="subscribe">
+          <button class="contact__btn" @click="subscribe" :disabled="cargando">
+            {{ cargando ? 'Enviando...' : 'Suscribir →' }}
           </button>
         </div>
-
         <!-- Error -->
         <p v-if="error" class="contact__error">{{ error }}</p>
 
